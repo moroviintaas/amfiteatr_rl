@@ -1,14 +1,16 @@
 use tch::{TchError, Tensor};
 use tch::nn::{Optimizer, OptimizerConfig, Path, VarStore};
-use crate::torch_net::NetOutput;
+use crate::torch_net::{NetOutput, TensorA2C};
 
 pub struct NeuralNet<Output: NetOutput>{
     net: Box<dyn Fn(&Tensor) -> Output + Send>,
     var_store: VarStore,
 }
 
+
 pub type NeuralNet1 = NeuralNet<Tensor>;
 pub type NeuralNet2 = NeuralNet<(Tensor, Tensor)>;
+pub type A2CNet = NeuralNet<TensorA2C>;
 
 /// To construct network you need `VarStore` and function (closure) taking `nn::Path` as argument
 /// and constructs function (closure) which applies network model to `Tensor` producing `NetOutput`,
@@ -17,11 +19,11 @@ pub type NeuralNet2 = NeuralNet<(Tensor, Tensor)>;
 /// ```
 /// use tch::{Device, nn, Tensor};
 /// use tch::nn::{Adam, VarStore};
-/// use sztorm_rl::torch_net::NeuralNet2;
+/// use sztorm_rl::torch_net::{A2CNet, NeuralNet2, TensorA2C};
 /// let device = Device::cuda_if_available();
 /// let var_store = VarStore::new(device);
 /// let number_of_actions = 33_i64;
-/// let neural_net = NeuralNet2::new(var_store, |path|{
+/// let neural_net = A2CNet::new(var_store, |path|{
 ///     let seq = nn::seq()
 ///         .add(nn::linear(path / "input", 16, 128, Default::default()))
 ///         .add(nn::linear(path / "hidden", 128, 128, Default::default()));
@@ -30,7 +32,8 @@ pub type NeuralNet2 = NeuralNet<(Tensor, Tensor)>;
 ///     let device = path.device();
 ///     {move |xs: &Tensor|{
 ///         let xs = xs.to_device(device).apply(&seq);
-///         (xs.apply(&critic), xs.apply(&actor))
+///         //(xs.apply(&critic), xs.apply(&actor))
+///         TensorA2C{critic: xs.apply(&critic), actor: xs.apply(&actor)}
 ///     }}
 ///
 /// });

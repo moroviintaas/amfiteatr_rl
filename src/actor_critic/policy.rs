@@ -2,12 +2,13 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 use tch::Kind::Float;
 use tch::nn::Optimizer;
-use sztorm::agent::Policy;
+use sztorm::agent::{AgentTrajectory, Policy};
 use sztorm::protocol::DomainParameters;
-use sztorm::state::agent::InformationSet;
+use sztorm::RewardSource;
+use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::experiencing_policy::SelfExperiencingPolicy;
 use crate::tensor_repr::{TensorBuilder, TensorInterpreter};
-use crate::torch_net::NeuralNet2;
+use crate::torch_net::{A2CNet};
 
 
 pub struct ActorCriticPolicy<
@@ -16,7 +17,7 @@ pub struct ActorCriticPolicy<
     StateConverter: TensorBuilder<InfoSet>,
     ActInterpreter: TensorInterpreter<Option<DP::ActionType>>
 > {
-    network: NeuralNet2,
+    network: A2CNet,
     #[allow(dead_code)]
     optimizer: Optimizer,
     _dp: PhantomData<DP>,
@@ -28,15 +29,27 @@ pub struct ActorCriticPolicy<
 
 impl<
     DP: DomainParameters,
-    InfoSet: InformationSet<DP> + Debug,
+    InfoSet: ScoringInformationSet<DP> + Debug,
     StateConverter: TensorBuilder<InfoSet>,
     ActInterpreter: TensorInterpreter<Option<DP::ActionType>>
 > ActorCriticPolicy<DP, InfoSet, StateConverter, ActInterpreter>{
-    pub fn new(network: NeuralNet2,
+    pub fn new(network: A2CNet,
                optimizer: Optimizer,
                state_converter: StateConverter,
                action_interpreter: ActInterpreter) -> Self{
         Self{network, optimizer, state_converter, action_interpreter, _dp: Default::default(), _is: Default::default()}
+    }
+
+    pub fn batch_train(&mut self, trajectories: &[AgentTrajectory<DP, InfoSet>], gamma: f64, reward_source: RewardSource){
+        //let state_tensor = trajectories.iter().
+
+        // states
+        // rewards -> s_returns
+
+        for t in trajectories{
+
+        }
+        todo!();
     }
 }
 
@@ -50,8 +63,8 @@ impl<DP: DomainParameters,
     fn select_action(&self, state: &Self::StateType) -> Option<DP::ActionType> {
         let state_tensor = self.state_converter.build_tensor(state)
             .unwrap_or_else(|_| panic!("Failed converting state to Tensor: {:?}", state));
-        let (_critic, actor) = tch::no_grad(|| (self.network.net())(&state_tensor));
-
+        let out = tch::no_grad(|| (self.network.net())(&state_tensor));
+        let actor = out.actor;
         //somewhen it may be changed with temperature
         let probs = actor.softmax(-1, Float);
         let atensor = probs.multinomial(1, true);

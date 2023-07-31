@@ -1,7 +1,6 @@
 use tch::Tensor;
 use sztorm::Action;
-use sztorm::error::{ConvertError, SztormError};
-use sztorm::protocol::DomainParameters;
+use sztorm::error::{ConvertError};
 
 pub trait TensorBuilder<T>: Send{
     type Error: std::error::Error;

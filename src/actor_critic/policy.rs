@@ -10,7 +10,7 @@ use sztorm::protocol::DomainParameters;
 use sztorm::RewardSource;
 use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::experiencing_policy::SelfExperiencingPolicy;
-use crate::tensor_repr::{ConvStateToTensor, TensorBuilder, TensorInterpreter};
+use crate::tensor_repr::{ConvStateToTensor, TensorInterpreter};
 use crate::torch_net::{A2CNet};
 
 
@@ -43,14 +43,12 @@ impl<
         Self{network, optimizer, state_converter, action_interpreter, _dp: Default::default(), _is: Default::default()}
     }
 
+    /*
     pub fn batch_train(&mut self, trajectories: &[AgentTrajectory<DP, InfoSet>], gamma: f64, reward_source: RewardSource)
         -> SztormError<DP>
     where for<'a> &'a <DP as DomainParameters>::UniversalReward: Into<Tensor>,
     for<'a> &'a <InfoSet as ScoringInformationSet<DP>>::RewardType: Into<Tensor>{
-        //let state_tensor = trajectories.iter().
 
-        // states
-        // rewards -> s_returns
 
 
         for t in trajectories{
@@ -86,6 +84,8 @@ impl<
 
         todo!();
     }
+    */
+
 
     pub fn batch_train_env_rewards(&mut self, trajectories: &[AgentTrajectory<DP, InfoSet>], gamma: f64)
         -> SztormError<DP>

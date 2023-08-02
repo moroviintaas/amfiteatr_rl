@@ -10,7 +10,7 @@ use sztorm::protocol::DomainParameters;
 use sztorm::RewardSource;
 use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::experiencing_policy::SelfExperiencingPolicy;
-use crate::tensor_repr::{ConvStateToTensor, TensorInterpreter};
+use crate::tensor_repr::{ActionTensor, ConvStateToTensor, TensorInterpreter};
 use crate::torch_net::{A2CNet};
 
 
@@ -18,7 +18,7 @@ pub struct ActorCriticPolicy<
     DP: DomainParameters,
     InfoSet: InformationSet<DP> + Debug,
     StateConverter: ConvStateToTensor<InfoSet>,
-    ActInterpreter: TensorInterpreter<Option<DP::ActionType>>
+    //ActInterpreter: TensorInterpreter<Option<DP::ActionType>>
 > {
     network: A2CNet,
     #[allow(dead_code)]
@@ -26,7 +26,7 @@ pub struct ActorCriticPolicy<
     _dp: PhantomData<DP>,
     _is: PhantomData<InfoSet>,
     state_converter: StateConverter,
-    action_interpreter: ActInterpreter
+    //action_interpreter: ActInterpreter
 
 }
 
@@ -34,13 +34,19 @@ impl<
     DP: DomainParameters,
     InfoSet: ScoringInformationSet<DP> + Debug,
     StateConverter: ConvStateToTensor<InfoSet>,
-    ActInterpreter: TensorInterpreter<Option<DP::ActionType>>
-> ActorCriticPolicy<DP, InfoSet, StateConverter, ActInterpreter> {
+    //ActInterpreter: TensorInterpreter<Option<DP::ActionType>>
+> ActorCriticPolicy<DP, InfoSet, StateConverter,
+    /*ActInterpreter*/
+>
+where <DP as DomainParameters>::ActionType: ActionTensor{
     pub fn new(network: A2CNet,
                optimizer: Optimizer,
                state_converter: StateConverter,
-               action_interpreter: ActInterpreter) -> Self{
-        Self{network, optimizer, state_converter, action_interpreter, _dp: Default::default(), _is: Default::default()}
+               /*action_interpreter: ActInterpreter*/
+    ) -> Self{
+        Self{network, optimizer, state_converter,
+            //action_interpreter,
+            _dp: Default::default(), _is: Default::default()}
     }
 
     /*
@@ -118,8 +124,11 @@ impl<
 impl<DP: DomainParameters,
     InfoSet: InformationSet<DP> + Debug,
     TB: ConvStateToTensor<InfoSet>,
-    ActInterpreter: TensorInterpreter<Option<DP::ActionType>>
-> Policy<DP> for ActorCriticPolicy<DP, InfoSet, TB, ActInterpreter>{
+    /*ActInterpreter: TensorInterpreter<Option<DP::ActionType>>*/
+> Policy<DP> for ActorCriticPolicy<DP, InfoSet, TB,
+    /*ActInterpreter*/
+>
+where <DP as DomainParameters>::ActionType: ActionTensor{
     type StateType = InfoSet;
 
     fn select_action(&self, state: &Self::StateType) -> Option<DP::ActionType> {
@@ -131,8 +140,9 @@ impl<DP: DomainParameters,
         //somewhen it may be changed with temperature
         let probs = actor.softmax(-1, Float);
         let atensor = probs.multinomial(1, true);
-        self.action_interpreter.interpret_tensor(&atensor)
-            .expect("Failed converting tensor to action")
+        //self.action_interpreter.interpret_tensor(&atensor)
+        Some(DP::ActionType::try_from_tensor(&atensor)
+            .expect("Failed converting tensor to action"))
 
     }
 }
@@ -142,7 +152,9 @@ impl<
     DP: DomainParameters,
     InfoSet: InformationSet<DP> + Debug,
     TB: ConvStateToTensor<InfoSet>,
-    ActInterpreter: TensorInterpreter<Option<DP::ActionType>>> SelfExperiencingPolicy<DP> for ActorCriticPolicy<DP, InfoSet, TB, ActInterpreter>
+    /*ActInterpreter: TensorInterpreter<Option<DP::ActionType>>*/
+    > SelfExperiencingPolicy<DP> for ActorCriticPolicy<DP, InfoSet, TB,
+    /*ActInterpreter*/>
 where DP::ActionType: From<i64>{
     type PolicyUpdateError = tch::TchError;
 

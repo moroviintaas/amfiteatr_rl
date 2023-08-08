@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
+use tch::Device::Cpu;
 use tch::Kind::Float;
 use tch::kind::FLOAT_CPU;
 use tch::nn::Optimizer;
@@ -10,7 +11,7 @@ use sztorm::protocol::DomainParameters;
 use sztorm::RewardSource;
 use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::experiencing_policy::SelfExperiencingPolicy;
-use crate::tensor_repr::{ActionTensor, ConvStateToTensor, TensorInterpreter};
+use crate::tensor_repr::{ActionTensor, ConvStateToTensor, TensorInterpreter, TensorReward};
 use crate::torch_net::{A2CNet};
 
 
@@ -95,7 +96,8 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
 
     pub fn batch_train_env_rewards(&mut self, trajectories: &[AgentTrajectory<DP, InfoSet>], gamma: f64)
         -> SztormError<DP>
-    where for<'a> Tensor: From<&'a <DP as DomainParameters>::UniversalReward>{
+    where for<'a> Tensor: From<&'a <DP as DomainParameters>::UniversalReward>,
+    <DP as DomainParameters>::UniversalReward: TensorReward {
 
         for t in trajectories{
             if t.list().is_empty(){
@@ -108,7 +110,10 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
             let final_score_t: Tensor =  t.list().last().unwrap().universal_score_after().into();
 
             let discounted_rewards = {
-                let mut r = Tensor::zeros([state_tensor_results.len() as i64 + 1, 1 ], FLOAT_CPU);
+                todo!();
+                //Rozmiar
+                let mut r = Tensor::zeros([state_tensor_results.len() as i64 + 1, 1 ], (DP::UniversalReward::kind(), self.network.device()));
+
                 for s in (0..state_tensor_results.len()).rev(){
                     let r_s = Tensor::from(&t[s].step_universal_reward()) + (r.get(s as i64+1) * gamma);
                     r.get(s as i64).copy_(&r_s);

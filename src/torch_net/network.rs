@@ -1,4 +1,4 @@
-use tch::{TchError, Tensor};
+use tch::{Device, TchError, Tensor};
 use tch::nn::{Optimizer, OptimizerConfig, Path, VarStore};
 use crate::torch_net::{NetOutput, TensorA2C};
 
@@ -75,4 +75,11 @@ impl<Output: NetOutput> NeuralNet<Output>{
     /// assert_eq!(output_tensor.size(), vec![4]);
     /// ```
     pub fn net(&self) -> &(dyn Fn(&Tensor) -> Output + Send){&self.net}
+
+    pub fn device(&self) -> Device{
+        self.var_store.device()
+    }
+    pub fn var_store(&self) -> &VarStore{
+        &self.var_store
+    }
 }

@@ -1,18 +1,19 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
+use log::debug;
 use tch::Device::Cpu;
-use tch::Kind::Float;
+use tch::Kind::{Double, Float};
 use tch::kind::FLOAT_CPU;
 use tch::nn::Optimizer;
-use tch::Tensor;
+use tch::{Kind, Tensor};
 use sztorm::agent::{AgentTrajectory, Policy};
 use sztorm::error::SztormError;
 use sztorm::protocol::DomainParameters;
 use sztorm::RewardSource;
 use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::experiencing_policy::SelfExperiencingPolicy;
-use crate::tensor_repr::{ActionTensor, ConvStateToTensor, TensorInterpreter, TensorReward};
-use crate::torch_net::{A2CNet};
+use crate::tensor_repr::{ActionTensor, ConvStateToTensor, TensorInterpreter, FloatTensorReward};
+use crate::torch_net::{A2CNet, TensorA2C};
 
 
 pub struct ActorCriticPolicy<
@@ -97,23 +98,61 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
     pub fn batch_train_env_rewards(&mut self, trajectories: &[AgentTrajectory<DP, InfoSet>], gamma: f64)
         -> SztormError<DP>
     where for<'a> Tensor: From<&'a <DP as DomainParameters>::UniversalReward>,
-    <DP as DomainParameters>::UniversalReward: TensorReward {
+    <DP as DomainParameters>::UniversalReward: FloatTensorReward {
 
+        //let mut states_batch = Tensor::new();
+        //let mut results_batch = Tensor::new();
+        //let mut action_batch = Tensor::new();
+
+        let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
+           acc + x.list().len()
+        });
+        let tmp_capacity_estimate = trajectories.iter().map(|x|{
+            x.list().len()
+        }).max().unwrap_or(0);
+        let mut state_tensor_vec = Vec::<Tensor>::with_capacity(capacity_estimate);
+        let mut reward_tensor_vec = Vec::<Tensor>::with_capacity(capacity_estimate);
+        let mut action_tensor_vec = Vec::<Tensor>::with_capacity(capacity_estimate);
+        let mut discounted_rewards_tensor_vec: Vec<Tensor> = Vec::with_capacity(tmp_capacity_estimate);
         for t in trajectories{
+
+
             if t.list().is_empty(){
                 continue;
             }
-            let state_tensor_results: Vec<Tensor> = t.list().iter().map(|step|{
+            let steps_in_trajectory = t.list().len();
+
+            let mut state_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
                 self.state_converter.make_tensor(step.step_state())
             }).collect();
 
-            let final_score_t: Tensor =  t.list().last().unwrap().universal_score_after().into();
+            let mut action_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
+                step.taken_action().to_tensor()
+            }).collect();
 
+            let mut final_score_t: Tensor =  t.list().last().unwrap().universal_score_after().into();
+
+            discounted_rewards_tensor_vec.clear();
+            for i in 0..=steps_in_trajectory{
+                discounted_rewards_tensor_vec.push(Tensor::zeros(DP::UniversalReward::total_size(), (Kind::Float, self.network.device())));
+            }
+            //let mut discounted_rewards_tensor_vec: Vec<Tensor> = vec![Tensor::zeros(DP::UniversalReward::total_size(), (Kind::Float, self.network.device())); steps_in_trajectory+1];
+            discounted_rewards_tensor_vec.last_mut().unwrap().copy_(&final_score_t);
+            for s in (0..discounted_rewards_tensor_vec.len()).rev(){
+                    let r_s = Tensor::from(&t[s].step_universal_reward()) + (&discounted_rewards_tensor_vec[s+1] * gamma);
+                    discounted_rewards_tensor_vec[s].copy_(&r_s);
+                }
+
+            state_tensor_vec.append(&mut state_tensor_vec_t);
+            action_tensor_vec.append(&mut action_tensor_vec_t);
+            reward_tensor_vec.append(&mut discounted_rewards_tensor_vec);
+            /*
             let discounted_rewards = {
-                todo!();
-                //Rozmiar
-                let mut r = Tensor::zeros([state_tensor_results.len() as i64 + 1, 1 ], (DP::UniversalReward::kind(), self.network.device()));
+                let mut r_size = vec![state_tensor_results.len() as i64 + 1];
+                r_size.append(&mut DP::UniversalReward::shape());
+                let mut r = Tensor::zeros(r_size, (Kind::Float, self.network.device()));
 
+                r.get(state_tensor_results.len() as i64).copy_(&final_score_t);
                 for s in (0..state_tensor_results.len()).rev(){
                     let r_s = Tensor::from(&t[s].step_universal_reward()) + (r.get(s as i64+1) * gamma);
                     r.get(s as i64).copy_(&r_s);
@@ -121,8 +160,37 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
 
                 r.narrow(0,0, state_tensor_results.len() as i64)
             };
+
+             */
+
+
+
+
+
+
+
+
+
         }
-        todo!()
+        let states_batch = Tensor::cat(&state_tensor_vec[..], 0);
+        let results_batch = Tensor::cat(&reward_tensor_vec[..], 0);
+        let action_batch = Tensor::cat(&action_tensor_vec[..], 0);
+        debug!("Intermediate size of states batch: {:?}", states_batch.size());
+        debug!("Intermediate size of result batch: {:?}", results_batch.size());
+        debug!("Intermediate size of action batch: {:?}", action_batch.size());
+        let TensorA2C{actor, critic} = (self.network.net())(&states_batch);
+        let log_probs = actor.log_softmax(-1, Kind::Float);
+        let probs = actor.softmax(-1, Float);
+        let action_log_probs = {
+            let index =  action_batch.to_device(self.network.device());
+            log_probs.gather(1, &index, false)
+        };
+
+        debug!("Action log probs size: {:?}", action_log_probs.size());
+        debug!("Probs size: {:?}", probs.size());
+
+
+        todo!();
     }
 }
 

@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 sztorm = {path = "../sztorm"}
 tch = "0.13.0"
+log = "0.4.19"

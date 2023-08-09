@@ -22,24 +22,23 @@ pub trait ActionTensor: Action{
     fn try_from_tensor(t: &Tensor) -> Result<Self, ConvertError>;
 }
 
-pub trait TensorReward: Reward{
+pub trait FloatTensorReward: Reward{
     //type Dims: IntList;
-    fn kind() -> Kind;
     fn to_tensor(&self) -> Tensor;
     //fn shape(&self) -> Dims;
     fn shape() -> Vec<i64>;
+    fn total_size() -> i64{
+        Self::shape().iter().fold(0, |acc, x| acc+x)
+    }
 }
 
 macro_rules! impl_reward_std_f {
     ($($x: ty), +) => {
         $(
-        impl TensorReward for $x{
-            fn kind() -> Kind {
-                Kind::Float
-            }
+        impl FloatTensorReward for $x{
 
             fn to_tensor(&self) -> Tensor {
-                let s = [*self;1];
+                let s = [*self as f32;1];
                 Tensor::from_slice(&s[..])
 
             }
@@ -57,13 +56,10 @@ macro_rules! impl_reward_std_f {
 impl_reward_std_f![f32, f64];
 
 
-impl TensorReward for i64{
-    fn kind() -> Kind {
-        Kind::Int64
-    }
+impl FloatTensorReward for i64{
 
     fn to_tensor(&self) -> Tensor {
-        let s = [*self;1];
+        let s = [*self as f32;1];
         Tensor::from_slice(&s[..])
 
     }

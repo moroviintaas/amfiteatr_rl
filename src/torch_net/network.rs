@@ -82,4 +82,7 @@ impl<Output: NetOutput> NeuralNet<Output>{
     pub fn var_store(&self) -> &VarStore{
         &self.var_store
     }
+    pub fn var_store_mut(&mut self) -> &mut VarStore{
+        &mut self.var_store
+    }
 }

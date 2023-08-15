@@ -4,7 +4,7 @@ use log::debug;
 use tch::Device::Cpu;
 use tch::Kind::{Double, Float};
 use tch::kind::FLOAT_CPU;
-use tch::nn::Optimizer;
+use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, kind, Tensor};
 use sztorm::agent::{AgentTrajectory, Policy};
 use sztorm::error::SztormError;
@@ -50,6 +50,24 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
             //action_interpreter,
             _dp: Default::default(), _is: Default::default()}
     }
+
+    pub fn network(&self) -> &A2CNet{
+        &self.network
+    }
+
+    pub fn network_mut(&mut self) -> &mut A2CNet{
+        &mut self.network
+    }
+
+    pub fn var_store(&self) -> &VarStore{
+        self.network.var_store()
+    }
+
+    pub fn var_store_mut(&mut self) -> &mut VarStore{
+        self.network.var_store_mut()
+    }
+
+    //pub fn var_store(&self) -> Var
 
     /*
     pub fn batch_train(&mut self, trajectories: &[AgentTrajectory<DP, InfoSet>], gamma: f64, reward_source: RewardSource)

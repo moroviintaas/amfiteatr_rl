@@ -1,4 +1,4 @@
-use tch::{Kind, Tensor};
+use tch::{Tensor};
 use sztorm::{Action, Reward};
 use sztorm::error::{ConvertError};
 

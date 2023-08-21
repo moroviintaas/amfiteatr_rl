@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 use tch::{Device, TchError, Tensor};
 use tch::nn::{Optimizer, OptimizerConfig, Path, VarStore};
 use crate::torch_net::{NetOutput, TensorA2C};
@@ -42,7 +43,10 @@ pub type A2CNet = NeuralNet<TensorA2C>;
 /// ```
 impl<Output: NetOutput> NeuralNet<Output>{
 
-    pub fn new<N: 'static + Send + Fn(&Tensor) -> Output,F: Fn(&Path) -> N>(var_store: VarStore, model_closure: F)  -> Self{
+    pub fn new<
+        N: 'static + Send + Fn(&Tensor) -> Output,
+        F: Fn(&Path) -> N>
+    (var_store: VarStore, model_closure: F) -> Self{
 
         let device = var_store.root().device();
         let model = (model_closure)(&var_store.root());
@@ -84,5 +88,51 @@ impl<Output: NetOutput> NeuralNet<Output>{
     }
     pub fn var_store_mut(&mut self) -> &mut VarStore{
         &mut self.var_store
+    }
+}
+
+/// ```
+/// use tch::{Device, nn};
+/// use tch::nn::VarStore;
+/// use sztorm_rl::torch_net::NeuralNetCloner;
+/// let nc = NeuralNetCloner::new(|path|{
+///     let seq = nn::seq()
+///         .add(nn::linear(path / "input", 32, 4, Default::default()));
+///     move |tensor| {tensor.apply(&seq)}
+/// });
+/// let (vs1, vs2) = (VarStore::new(Device::Cpu), VarStore::new(Device::Cpu));
+/// let (net1, net2) = (nc.get_net_closure(), nc.get_net_closure());
+///
+/// ```
+pub struct NeuralNetCloner<
+    Output: NetOutput,
+    N: 'static + Send + Fn(&Tensor) -> Output,
+    F: Fn(&Path) -> N + Clone>{
+
+    _output: PhantomData<Output>,
+    _net_closure: PhantomData<N>,
+    net_closure: F,
+
+
+}
+
+
+
+impl<
+    O: NetOutput,
+    N: 'static + Send + Fn(&Tensor) -> O,
+    F: Fn(&Path) -> N + Clone>
+NeuralNetCloner<O, N, F>{
+
+    pub fn new(net_closure: F) -> Self{
+        Self{
+            _output: PhantomData::default(),
+            _net_closure: PhantomData::default(),
+            net_closure
+        }
+    }
+
+    pub fn get_net_closure(&self) -> F{
+        self.net_closure.clone()
     }
 }

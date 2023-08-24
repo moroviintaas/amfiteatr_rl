@@ -1,6 +1,9 @@
+use std::fmt::{Debug, Display};
 use tch::{Tensor};
 use sztorm::{Action, Reward};
 use sztorm::error::{ConvertError};
+use sztorm::protocol::DomainParameters;
+use sztorm::state::agent::InformationSet;
 
 pub trait TensorBuilder<T>: Send{
     type Error: std::error::Error;
@@ -10,6 +13,33 @@ pub trait TensorBuilder<T>: Send{
 pub trait ConvStateToTensor<T>: Send{
     fn make_tensor(&self, t: &T) -> Tensor;
 }
+
+pub trait WayToTensor: Send {
+    fn desired_shape() -> &'static[i64];
+}
+
+pub trait ConvertToTensor<W: WayToTensor>{
+    fn to_tensor(&self, way: &W) -> Tensor;
+}
+
+impl<W: WayToTensor, T: ConvertToTensor<W>> ConvertToTensor<W> for Box<T>{
+    fn to_tensor(&self, way: &W) -> Tensor {
+        self.as_ref().to_tensor(way)
+    }
+}
+
+pub trait ConvertToTensorD<W: WayToTensor>: ConvertToTensor<W> + Display + Debug{}
+impl<W: WayToTensor, T: ConvertToTensor<W> + Display + Debug> ConvertToTensorD<W> for T{}
+/*
+impl<DP: DomainParameters, S: InformationSet<DP>, T: ConvStateToTensor<S>> ConvStateToTensor<Box<S>> for T{
+    fn make_tensor(&self, t: &Box<S>) -> Tensor {
+        self.make_tensor(t.as_ref())
+    }
+}
+
+ */
+
+
 
 pub trait TensorInterpreter<T>: Send{
     type Error: std::error::Error;

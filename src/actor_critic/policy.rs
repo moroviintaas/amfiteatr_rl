@@ -9,14 +9,15 @@ use sztorm::error::SztormError;
 use sztorm::protocol::DomainParameters;
 use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::experiencing_policy::SelfExperiencingPolicy;
-use crate::tensor_repr::{ActionTensor, ConvStateToTensor, FloatTensorReward};
+use crate::tensor_repr::{ActionTensor, ConvertToTensor, ConvStateToTensor, FloatTensorReward, WayToTensor};
 use crate::torch_net::{A2CNet, TensorA2C};
 
 
 pub struct ActorCriticPolicy<
     DP: DomainParameters,
-    InfoSet: InformationSet<DP> + Debug,
-    StateConverter: ConvStateToTensor<InfoSet>,
+    InfoSet: InformationSet<DP> + Debug + ConvertToTensor<InfoSetWay>,
+    //StateConverter: ConvStateToTensor<InfoSet>,
+    InfoSetWay: WayToTensor
     //ActInterpreter: TensorInterpreter<Option<DP::ActionType>>
 > {
     network: A2CNet,
@@ -24,23 +25,36 @@ pub struct ActorCriticPolicy<
     optimizer: Optimizer,
     _dp: PhantomData<DP>,
     _is: PhantomData<InfoSet>,
-    state_converter: StateConverter,
+    //state_converter: StateConverter,
+    convert_way: InfoSetWay
     //action_interpreter: ActInterpreter
 
 }
 
 impl<
     DP: DomainParameters,
-    InfoSet: ScoringInformationSet<DP> + Debug,
-    StateConverter: ConvStateToTensor<InfoSet>>
-ActorCriticPolicy<DP, InfoSet, StateConverter>
+    InfoSet: ScoringInformationSet<DP>  + Debug + ConvertToTensor<InfoSetWay>,
+    InfoSetWay: WayToTensor,
+    //InfoSet: ScoringInformationSet<DP> + Debug,
+    //StateConverter: ConvStateToTensor<InfoSet>>
+    >
+ActorCriticPolicy<
+    DP,
+    InfoSet,
+    InfoSetWay,
+    //StateConverter>
+    >
 where <DP as DomainParameters>::ActionType: ActionTensor{
     pub fn new(network: A2CNet,
                optimizer: Optimizer,
-               state_converter: StateConverter,
+               convert_way: InfoSetWay,
+               //state_converter: StateConverter,
                /*action_interpreter: ActInterpreter*/
     ) -> Self{
-        Self{network, optimizer, state_converter,
+        Self{
+            network, optimizer,
+            //state_converter,
+            convert_way,
             //action_interpreter,
             _dp: Default::default(), _is: Default::default()}
     }
@@ -133,7 +147,8 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
             let steps_in_trajectory = t.list().len();
 
             let mut state_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
-                self.state_converter.make_tensor(step.step_state())
+                //self.state_converter.make_tensor(step.step_state())
+                step.step_state().to_tensor(&self.convert_way)
             }).collect();
 
             let mut action_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
@@ -214,7 +229,8 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
             let steps_in_trajectory = t.list().len();
 
             let mut state_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
-                self.state_converter.make_tensor(step.step_state())
+                //self.state_converter.make_tensor(step.step_state())
+                step.step_state().to_tensor(&self.convert_way)
             }).collect();
 
             let mut action_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
@@ -275,10 +291,16 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
 }
 
 impl<DP: DomainParameters,
-    InfoSet: InformationSet<DP> + Debug,
-    TB: ConvStateToTensor<InfoSet>,
+    //InfoSet: InformationSet<DP> + Debug,
+    //TB: ConvStateToTensor<InfoSet>,
+    InfoSet: InformationSet<DP> + Debug + ConvertToTensor<InfoSetWay>,
+    InfoSetWay: WayToTensor,
     /*ActInterpreter: TensorInterpreter<Option<DP::ActionType>>*/
-> Policy<DP> for ActorCriticPolicy<DP, InfoSet, TB,
+> Policy<DP> for ActorCriticPolicy<
+    DP,
+    InfoSet,
+    //TB,
+    InfoSetWay,
     /*ActInterpreter*/
 >
 where <DP as DomainParameters>::ActionType: ActionTensor{
@@ -287,7 +309,8 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
     fn select_action(&self, state: &Self::StateType) -> Option<DP::ActionType> {
         //let state_tensor = self.state_converter.build_tensor(state)
         //    .unwrap_or_else(|_| panic!("Failed converting state to Tensor: {:?}", state));
-        let state_tensor = self.state_converter.make_tensor(state);
+        //let state_tensor = self.state_converter.make_tensor(state);
+        let state_tensor = state.to_tensor(&self.convert_way);
         let out = tch::no_grad(|| (self.network.net())(&state_tensor));
         let actor = out.actor;
         //somewhen it may be changed with temperature
@@ -303,10 +326,17 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
 
 impl<
     DP: DomainParameters,
-    InfoSet: InformationSet<DP> + Debug,
-    TB: ConvStateToTensor<InfoSet>,
+    InfoSet: InformationSet<DP> + Debug + ConvertToTensor<InfoSetWay>,
+    InfoSetWay: WayToTensor,
+    //InfoSet: InformationSet<DP> + Debug,
+    //TB: ConvStateToTensor<InfoSet>,
     /*ActInterpreter: TensorInterpreter<Option<DP::ActionType>>*/
-    > SelfExperiencingPolicy<DP> for ActorCriticPolicy<DP, InfoSet, TB,
+    >
+SelfExperiencingPolicy<DP> for ActorCriticPolicy<
+    DP,
+    InfoSet,
+    //TB,
+    InfoSetWay,
     /*ActInterpreter*/>
 where DP::ActionType: From<i64>{
     type PolicyUpdateError = tch::TchError;

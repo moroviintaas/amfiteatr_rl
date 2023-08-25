@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::fmt::{Debug, Display};
 use tch::{Tensor};
 use sztorm::{Action, Reward};
@@ -26,6 +27,15 @@ impl<W: WayToTensor, T: ConvertToTensor<W>> ConvertToTensor<W> for Box<T>{
     fn to_tensor(&self, way: &W) -> Tensor {
         self.as_ref().to_tensor(way)
     }
+}
+
+pub trait WayFromTensor: Send{
+    fn expected_input_shape() -> &'static[i64];
+}
+
+pub trait TryConvertFromTensor<W: WayFromTensor>{
+    type ConvertError: Error;
+    fn try_from_tensor(tensor: &Tensor, way: &W) -> Result<Self, Self::ConvertError> where Self: Sized;
 }
 
 pub trait ConvertToTensorD<W: WayToTensor>: ConvertToTensor<W> + Display + Debug{}

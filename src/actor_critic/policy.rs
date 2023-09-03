@@ -188,7 +188,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
         let probs = actor.softmax(-1, Float);
         let action_log_probs = {
             let index =  action_batch.to_device(self.network.device());
-            debug!("Index: {}", index);
+            debug!("Index: {:?}", index);
             log_probs.gather(1, &index, false)
         };
 

@@ -1,17 +1,19 @@
 use std::marker::PhantomData;
 use tch::{Device, TchError, Tensor};
 use tch::nn::{Optimizer, OptimizerConfig, Path, VarStore};
-use crate::torch_net::{NetOutput, TensorA2C};
+use crate::torch_net::{NetInput, NetOutput, TensorA2C, TensorStateAction};
 
 pub struct NeuralNet<Output: NetOutput>{
     net: Box<dyn Fn(&Tensor) -> Output + Send>,
     var_store: VarStore,
+    //_input: PhantomData<Input>,
 }
 
 
 pub type NeuralNet1 = NeuralNet<Tensor>;
 pub type NeuralNet2 = NeuralNet<(Tensor, Tensor)>;
 pub type A2CNet = NeuralNet<TensorA2C>;
+pub type QValueNet = NeuralNet<Tensor>;
 
 /// To construct network you need `VarStore` and function (closure) taking `nn::Path` as argument
 /// and constructs function (closure) which applies network model to `Tensor` producing `NetOutput`,
@@ -41,7 +43,7 @@ pub type A2CNet = NeuralNet<TensorA2C>;
 ///
 /// let optimizer = neural_net.build_optimizer(Adam::default(), 0.01);
 /// ```
-impl<Output: NetOutput> NeuralNet<Output>{
+impl<Output: NetOutput> NeuralNet< Output>{
 
     pub fn new<
         N: 'static + Send + Fn(&Tensor) -> Output,
@@ -52,7 +54,8 @@ impl<Output: NetOutput> NeuralNet<Output>{
         let model = (model_closure)(&var_store.root());
         Self{
             var_store,
-            net: Box::new(move |x| {(model)(&x.to_device(device))})
+            net: Box::new(move |x| {(model)(&x.to_device(device))}),
+            //_input: Default::default()
         }
     }
     pub fn build_optimizer<OptC: OptimizerConfig>

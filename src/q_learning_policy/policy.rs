@@ -163,10 +163,10 @@ where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Ite
 
 
             let final_score_t: Tensor =  t.list().last().unwrap().universal_score_after().to_tensor();
-
+            debug!("Final score tensor shape: {:?}", final_score_t.size());
             discounted_rewards_tensor_vec.clear();
             for _ in 0..=steps_in_trajectory{
-                discounted_rewards_tensor_vec.push(Tensor::zeros(A2T::desired_shape(), (Kind::Float, self.network.device())));
+                discounted_rewards_tensor_vec.push(Tensor::zeros([1], (Kind::Float, self.network.device())));
             }
             debug!("Discounted_rewards_tensor_vec len before inserting: {}", discounted_rewards_tensor_vec.len());
             //let mut discounted_rewards_tensor_vec: Vec<Tensor> = vec![Tensor::zeros(DP::UniversalReward::total_size(), (Kind::Float, self.network.device())); steps_in_trajectory+1];
@@ -187,6 +187,8 @@ where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Ite
         let state_action_batch = Tensor::stack(&state_action_tensor_vec[..], 0);
         let results_batch = Tensor::stack(&reward_tensor_vec[..], 0);
         let q_batch = Tensor::stack(&qval_tensor_vec[..], 0);
+        debug!("Result batch shape: {:?}", results_batch.size());
+        debug!("Q result batch shape: {:?}", q_batch.size());
 
         //let diff = &results_batch - q_batch;
         //let loss = (&diff * &diff).mean(Float);

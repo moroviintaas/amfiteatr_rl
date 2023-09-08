@@ -112,7 +112,7 @@ impl FloatTensorReward for i64{
 impl FloatTensorReward for i32{
 
     fn to_tensor(&self) -> Tensor {
-        let s = [*self as f32;1];
+        let s = [*self as f32];
         Tensor::from_slice(&s[..])
 
     }

@@ -1,10 +1,12 @@
 use tch::nn::VarStore;
-use sztorm::agent::AgentTrajectory;
+use sztorm::agent::{AgentTrajectory, Policy};
 use sztorm::error::SztormError;
 use sztorm::protocol::DomainParameters;
 use sztorm::state::agent::{InformationSet, ScoringInformationSet};
+use crate::error::SztormRLError;
 
-pub trait LearningNetworkPolicy<DP: DomainParameters, InfoSet: ScoringInformationSet<DP>> {
+pub trait LearningNetworkPolicy<DP: DomainParameters> : Policy<DP>
+where <Self as Policy<DP>>::StateType: ScoringInformationSet<DP> {
     type Network;
     type TrainConfig;
 
@@ -13,8 +15,6 @@ pub trait LearningNetworkPolicy<DP: DomainParameters, InfoSet: ScoringInformatio
     fn var_store(&self) -> &VarStore;
     fn var_store_mut(&mut self) -> &mut VarStore;
 
-    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, InfoSet>], train_config: &Self::TrainConfig) -> Result<(), SztormError<DP>>;
-
-
+    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::StateType>], train_config: &Self::TrainConfig) -> Result<(), SztormRLError<DP>>;
 
 }

@@ -6,7 +6,8 @@ use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::error::SztormRLError;
 
 pub trait LearningNetworkPolicy<DP: DomainParameters> : Policy<DP>
-where <Self as Policy<DP>>::StateType: ScoringInformationSet<DP> {
+where <Self as Policy<DP>>::StateType: ScoringInformationSet<DP>
+{
     type Network;
     type TrainConfig;
 

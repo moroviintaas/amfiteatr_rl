@@ -15,7 +15,7 @@ pub trait ConvStateToTensor<T>: Send{
     fn make_tensor(&self, t: &T) -> Tensor;
 }
 
-pub trait WayToTensor: Send {
+pub trait WayToTensor: Send + Default{
     fn desired_shape() -> &'static[i64];
 }
 

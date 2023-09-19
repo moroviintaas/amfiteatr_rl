@@ -11,7 +11,7 @@ use sztorm::{ProportionalReward, Reward};
 use sztorm::error::SztormError;
 use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::error::SztormRLError;
-use crate::LearningNetworkPolicy;
+use crate::{LearningNetworkPolicy, TrainConfig};
 use crate::tensor_repr::{ConvertToTensor, ConvStateToTensor, FloatTensorReward, WayToTensor};
 use crate::torch_net::NeuralNet1;
 
@@ -96,6 +96,7 @@ pub struct QLearningPolicy<
     info_set_way: IS2T,
     action_way: A2T,
     q_selector: QSelector,
+    training_config: TrainConfig,
 }
 
 impl
@@ -107,8 +108,21 @@ impl
 > QLearningPolicy<DP, InfoSet, IS2T, A2T>
 where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>, {
 
-    pub fn new(network: NeuralNet1, optimizer: Optimizer, info_set_way: IS2T, action_way: A2T, q_selector: QSelector) -> Self{
-        Self{network, optimizer, info_set_way, action_way, q_selector, _dp: Default::default(), _is: Default::default()}
+    pub fn new(
+        network: NeuralNet1,
+        optimizer: Optimizer,
+        info_set_way: IS2T,
+        action_way: A2T,
+        q_selector: QSelector,
+        training_config: TrainConfig) -> Self{
+        Self{
+            network,
+            optimizer,
+            info_set_way,
+            action_way,
+            q_selector,
+            training_config,
+            _dp: Default::default(), _is: Default::default()}
     }
 /*
     pub fn var_store_mut(&mut self) -> &mut VarStore{
@@ -214,7 +228,7 @@ impl
 where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>,
 <DP as DomainParameters>::UniversalReward: FloatTensorReward{
     type Network = NeuralNet1;
-    type TrainConfig = f64;
+    type TrainConfig = TrainConfig;
 
     fn network(&self) -> &Self::Network {
         &self.network
@@ -232,7 +246,7 @@ where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Ite
         self.network.var_store_mut()
     }
 
-    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::StateType>], gamma: &Self::TrainConfig) -> Result<(), SztormRLError<DP>> {
+    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::StateType>]) -> Result<(), SztormRLError<DP>> {
         let device = self.network.device();
         let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
            acc + x.list().len()
@@ -287,7 +301,7 @@ where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Ite
             discounted_rewards_tensor_vec.last_mut().unwrap().copy_(&final_score_t);
             for s in (0..discounted_rewards_tensor_vec.len()-1).rev(){
                 //println!("{}", s);
-                let r_s = &t[s].step_universal_reward().to_tensor() + (&discounted_rewards_tensor_vec[s+1] * *gamma);
+                let r_s = &t[s].step_universal_reward().to_tensor() + (&discounted_rewards_tensor_vec[s+1] * self.training_config.gamma);
                 discounted_rewards_tensor_vec[s].copy_(&r_s);
             }
             discounted_rewards_tensor_vec.pop();
@@ -309,6 +323,10 @@ where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Ite
         let loss = q_batch.mse_loss(&results_batch, Reduction::Mean);
         self.optimizer.backward_step_clip(&loss, 0.5);
         Ok(())
+    }
+
+    fn config(&self) -> &Self::TrainConfig {
+        &self.training_config
     }
 }
 

@@ -10,7 +10,7 @@ use sztorm::protocol::DomainParameters;
 use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::error::SztormRLError;
 use crate::experiencing_policy::SelfExperiencingPolicy;
-use crate::LearningNetworkPolicy;
+use crate::{LearningNetworkPolicy, TrainConfig};
 use crate::tensor_repr::{ActionTensor, ConvertToTensor, ConvStateToTensor, FloatTensorReward, WayToTensor};
 use crate::torch_net::{A2CNet, TensorA2C};
 
@@ -28,7 +28,8 @@ pub struct ActorCriticPolicy<
     _dp: PhantomData<DP>,
     _is: PhantomData<InfoSet>,
     //state_converter: StateConverter,
-    convert_way: InfoSetWay
+    convert_way: InfoSetWay,
+    training_config: TrainConfig,
     //action_interpreter: ActInterpreter
 
 }
@@ -50,6 +51,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
     pub fn new(network: A2CNet,
                optimizer: Optimizer,
                convert_way: InfoSetWay,
+               training_config: TrainConfig
                //state_converter: StateConverter,
                /*action_interpreter: ActInterpreter*/
     ) -> Self{
@@ -57,8 +59,10 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
             network, optimizer,
             //state_converter,
             convert_way,
+            training_config,
             //action_interpreter,
-            _dp: Default::default(), _is: Default::default()}
+            _dp: Default::default(), _is: Default::default()
+            }
     }
 
 
@@ -277,7 +281,7 @@ impl<
 where <DP as DomainParameters>::ActionType: ActionTensor,
 <InfoSet as ScoringInformationSet<DP>>::RewardType: FloatTensorReward{
     type Network = A2CNet;
-    type TrainConfig = f64;
+    type TrainConfig = TrainConfig;
 
     fn network(&self) -> &A2CNet{
         &self.network
@@ -296,7 +300,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
     }
 
 
-    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::StateType>], gamma: &Self::TrainConfig) -> Result<(), SztormRLError<DP>> {
+    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::StateType>]) -> Result<(), SztormRLError<DP>> {
         let device = self.network.device();
         let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
            acc + x.list().len()
@@ -336,7 +340,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
             discounted_rewards_tensor_vec.last_mut().unwrap().copy_(&final_score_t);
             for s in (0..discounted_rewards_tensor_vec.len()-1).rev(){
                 //println!("{}", s);
-                let r_s = &t[s].step_subjective_reward().to_tensor() + (&discounted_rewards_tensor_vec[s+1] * *gamma);
+                let r_s = &t[s].step_subjective_reward().to_tensor() + (&discounted_rewards_tensor_vec[s+1] * self.training_config.gamma);
                 discounted_rewards_tensor_vec[s].copy_(&r_s);
             }
             discounted_rewards_tensor_vec.pop();
@@ -373,6 +377,10 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
         self.optimizer.backward_step_clip(&loss, 0.5);
 
         Ok(())
+    }
+
+    fn config(&self) -> &Self::TrainConfig {
+        &self.training_config
     }
 }
 

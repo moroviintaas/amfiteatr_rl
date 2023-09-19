@@ -16,6 +16,7 @@ where <Self as Policy<DP>>::StateType: ScoringInformationSet<DP>
     fn var_store(&self) -> &VarStore;
     fn var_store_mut(&mut self) -> &mut VarStore;
 
-    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::StateType>], train_config: &Self::TrainConfig) -> Result<(), SztormRLError<DP>>;
+    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::StateType>]) -> Result<(), SztormRLError<DP>>;
+    fn config(&self) -> &Self::TrainConfig;
 
 }

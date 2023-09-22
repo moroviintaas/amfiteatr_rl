@@ -301,7 +301,7 @@ where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Ite
             discounted_rewards_tensor_vec.last_mut().unwrap().copy_(&final_score_t);
             for s in (0..discounted_rewards_tensor_vec.len()-1).rev(){
                 //println!("{}", s);
-                let r_s = &t[s].step_universal_reward().to_tensor() + (&discounted_rewards_tensor_vec[s+1] * self.training_config.gamma);
+                let r_s = &t[s].step_universal_reward().to_tensor().to_device(self.network.device()) + (&discounted_rewards_tensor_vec[s+1] * self.training_config.gamma);
                 discounted_rewards_tensor_vec[s].copy_(&r_s);
             }
             discounted_rewards_tensor_vec.pop();

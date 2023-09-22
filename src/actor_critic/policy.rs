@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
-use log::debug;
+use log::{debug, trace};
 use tch::Kind::{Float};
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, kind, Tensor};
@@ -257,12 +257,14 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
         //let state_tensor = self.state_converter.build_tensor(state)
         //    .unwrap_or_else(|_| panic!("Failed converting state to Tensor: {:?}", state));
         //let state_tensor = self.state_converter.make_tensor(state);
+        trace!("Selecting action");
         let state_tensor = state.to_tensor(&self.convert_way);
         let out = tch::no_grad(|| (self.network.net())(&state_tensor));
         let actor = out.actor;
         //somewhen it may be changed with temperature
         let probs = actor.softmax(-1, Float);
         let atensor = probs.multinomial(1, true);
+        trace!("After selecting action, before converting from tensor to action form");
         //self.action_interpreter.interpret_tensor(&atensor)
         Some(DP::ActionType::try_from_tensor(&atensor)
             .expect("Failed converting tensor to action"))
@@ -340,7 +342,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
             discounted_rewards_tensor_vec.last_mut().unwrap().copy_(&final_score_t);
             for s in (0..discounted_rewards_tensor_vec.len()-1).rev(){
                 //println!("{}", s);
-                let r_s = &t[s].step_subjective_reward().to_tensor() + (&discounted_rewards_tensor_vec[s+1] * self.training_config.gamma);
+                let r_s = &t[s].step_subjective_reward().to_tensor().to_device(device) + (&discounted_rewards_tensor_vec[s+1] * self.training_config.gamma);
                 discounted_rewards_tensor_vec[s].copy_(&r_s);
             }
             discounted_rewards_tensor_vec.pop();
@@ -351,9 +353,9 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
             reward_tensor_vec.append(&mut discounted_rewards_tensor_vec);
 
         }
-        let states_batch = Tensor::stack(&state_tensor_vec[..], 0);
-        let results_batch = Tensor::stack(&reward_tensor_vec[..], 0);
-        let action_batch = Tensor::stack(&action_tensor_vec[..], 0);
+        let states_batch = Tensor::stack(&state_tensor_vec[..], 0).to_device(device);
+        let results_batch = Tensor::stack(&reward_tensor_vec[..], 0).to_device(device);
+        let action_batch = Tensor::stack(&action_tensor_vec[..], 0).to_device(device);
         debug!("Size of states batch: {:?}", states_batch.size());
         debug!("Size of result batch: {:?}", results_batch.size());
         debug!("Size of action batch: {:?}", action_batch.size());

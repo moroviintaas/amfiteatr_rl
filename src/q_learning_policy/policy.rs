@@ -1,18 +1,18 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
-use std::ops::{Add, Sub};
+
 use log::debug;
 use tch::Kind::Float;
 use tch::nn::{Optimizer, VarStore};
-use tch::{kind, Kind, Reduction, Tensor};
+use tch::{Kind, Reduction, Tensor};
 use sztorm::agent::{AgentTrajectory, Policy};
 use sztorm::protocol::DomainParameters;
-use sztorm::{ProportionalReward, Reward};
-use sztorm::error::SztormError;
+
+
 use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::error::SztormRLError;
 use crate::{LearningNetworkPolicy, TrainConfig};
-use crate::tensor_repr::{ConvertToTensor, ConvStateToTensor, FloatTensorReward, WayToTensor};
+use crate::tensor_repr::{ConvertToTensor, FloatTensorReward, WayToTensor};
 use crate::torch_net::NeuralNet1;
 
 
@@ -247,7 +247,7 @@ where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Ite
     }
 
     fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::StateType>]) -> Result<(), SztormRLError<DP>> {
-        let device = self.network.device();
+        let _device = self.network.device();
         let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
            acc + x.list().len()
         });
@@ -312,7 +312,7 @@ where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Ite
             qval_tensor_vec.append(&mut qval_tensor_vec_t);
 
         }
-        let state_action_batch = Tensor::stack(&state_action_tensor_vec[..], 0);
+        let _state_action_batch = Tensor::stack(&state_action_tensor_vec[..], 0);
         let results_batch = Tensor::stack(&reward_tensor_vec[..], 0);
         let q_batch = Tensor::stack(&qval_tensor_vec[..], 0);
         debug!("Result batch shape: {:?}", results_batch.size());

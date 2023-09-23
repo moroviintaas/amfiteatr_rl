@@ -1,8 +1,8 @@
 use tch::nn::VarStore;
 use sztorm::agent::{AgentTrajectory, Policy};
-use sztorm::error::SztormError;
+
 use sztorm::protocol::DomainParameters;
-use sztorm::state::agent::{InformationSet, ScoringInformationSet};
+use sztorm::state::agent::{ScoringInformationSet};
 use crate::error::SztormRLError;
 
 pub trait LearningNetworkPolicy<DP: DomainParameters> : Policy<DP>

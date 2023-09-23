@@ -11,7 +11,7 @@ use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::error::SztormRLError;
 use crate::experiencing_policy::SelfExperiencingPolicy;
 use crate::{LearningNetworkPolicy, TrainConfig};
-use crate::tensor_repr::{ActionTensor, ConvertToTensor, ConvStateToTensor, FloatTensorReward, WayToTensor};
+use crate::tensor_repr::{ActionTensor, ConvertToTensor, FloatTensorReward, WayToTensor};
 use crate::torch_net::{A2CNet, TensorA2C};
 
 

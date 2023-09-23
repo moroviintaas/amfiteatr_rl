@@ -3,8 +3,8 @@ use std::fmt::{Debug, Display};
 use tch::{Tensor};
 use sztorm::{Action, Reward};
 use sztorm::error::{ConvertError};
-use sztorm::protocol::DomainParameters;
-use sztorm::state::agent::InformationSet;
+
+
 
 pub trait TensorBuilder<T>: Send{
     type Error: std::error::Error;

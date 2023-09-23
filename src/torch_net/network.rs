@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use tch::{Device, TchError, Tensor};
 use tch::nn::{Optimizer, OptimizerConfig, Path, VarStore};
-use crate::torch_net::{NetInput, NetOutput, TensorA2C, TensorStateAction};
+use crate::torch_net::{NetOutput, TensorA2C};
 
 pub struct NeuralNet<Output: NetOutput>{
     net: Box<dyn Fn(&Tensor) -> Output + Send>,

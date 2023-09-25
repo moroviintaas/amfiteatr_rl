@@ -2,6 +2,7 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use log::debug;
+use rand::distributions::uniform::{UniformFloat, UniformSampler};
 use tch::Kind::Float;
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, Reduction, Tensor};
@@ -14,6 +15,7 @@ use crate::error::SztormRLError;
 use crate::{LearningNetworkPolicy, TrainConfig};
 use crate::tensor_repr::{ConvertToTensor, FloatTensorReward, WayToTensor};
 use crate::torch_net::NeuralNet1;
+use rand::thread_rng;
 
 
 
@@ -21,7 +23,8 @@ use crate::torch_net::NeuralNet1;
 pub enum QSelector{
     Max,
     //MultinomialLinear,
-    MultinomialLogits
+    MultinomialLogits,
+    EpsilonGreedy(f64),
 }
 
 
@@ -30,9 +33,13 @@ impl QSelector{
     pub fn select_q_value_index(&self, q_vals: &Tensor) -> Option<usize>{
         match self{
             Self::Max => {
-                let rv = Vec::<f32>::try_from(q_vals.argmax(None, false));
+                //println!("{:?}", q_vals.size());
+                //println!("{:?}", q_vals.argmax(None, false));
+                let rv = f32::try_from(q_vals.argmax(None, false));
+                //println!("{:?}", rv);
                 //rv.map(|v| v.first()).ok().and_then(|i| Some(i as usize))
-                rv.ok().and_then(|v|v.first().and_then(|i| Some(*i as usize)))
+                //rv.ok().and_then(|v|v.first().and_then(|i| Some(*i as usize)))
+                rv.ok().and_then(|i| Some(i as usize))
 
             },
             Self::MultinomialLogits => {
@@ -41,6 +48,22 @@ impl QSelector{
                 let rv =  Vec::<f32>::try_from(index_t);
                 //rv.map(|v|v.first()).ok().and_then(|i| Some(i as usize))
                 rv.ok().and_then(|v|v.first().and_then(|i| Some(*i as usize)))
+            }
+            Self::EpsilonGreedy(epsilon) =>{
+                let mut rng = thread_rng();
+                let n: f64 = UniformFloat::<f64>::sample_single(0.0, 1.0, &mut rng);
+                //println!("n: {n:}, epsilon: {epsilon:}");
+                if n < *epsilon{
+                    let probs = q_vals.softmax(-1, Float);
+                    let index_t = probs.multinomial(1, false);
+                    let rv =  Vec::<f32>::try_from(index_t);
+                    //rv.map(|v|v.first()).ok().and_then(|i| Some(i as usize))
+                    rv.ok().and_then(|v|v.first().and_then(|i| Some(*i as usize)))
+                } else {
+                    let rv = f32::try_from(q_vals.argmax(None, false));
+                    rv.ok().and_then(|i| Some(i as usize))
+                }
+
             }
         }
     }

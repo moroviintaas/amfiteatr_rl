@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fmt::{Debug, Display};
 use tch::{Tensor};
-use sztorm::{Action, Reward};
+use sztorm::domain::{Action, Reward};
 use sztorm::error::{ConvertError};
 
 

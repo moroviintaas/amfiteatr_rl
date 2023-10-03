@@ -6,7 +6,7 @@ use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, kind, Tensor};
 use sztorm::agent::{AgentTrajectory, Policy};
 use sztorm::error::SztormError;
-use sztorm::protocol::DomainParameters;
+use sztorm::domain::DomainParameters;
 use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::error::SztormRLError;
 use crate::experiencing_policy::SelfExperiencingPolicy;

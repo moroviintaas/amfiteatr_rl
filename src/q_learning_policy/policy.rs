@@ -7,7 +7,7 @@ use tch::Kind::Float;
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, Reduction, Tensor};
 use sztorm::agent::{AgentTrajectory, Policy};
-use sztorm::protocol::DomainParameters;
+use sztorm::domain::DomainParameters;
 
 
 use sztorm::state::agent::{InformationSet, ScoringInformationSet};

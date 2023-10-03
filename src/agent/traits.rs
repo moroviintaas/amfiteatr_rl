@@ -1,5 +1,5 @@
 use sztorm::agent::{AutomaticAgent, AutomaticAgentRewarded, PolicyAgent, StatefulAgent, TracingAgent};
-use sztorm::protocol::DomainParameters;
+use sztorm::domain::DomainParameters;
 use sztorm::state::agent::ScoringInformationSet;
 use crate::LearningNetworkPolicy;
 

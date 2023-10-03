@@ -1,6 +1,6 @@
 use std::error::Error;
 use sztorm::agent::{AgentTrajectory, Policy};
-use sztorm::protocol::DomainParameters;
+use sztorm::domain::DomainParameters;
 use sztorm::state::agent::ScoringInformationSet;
 
 

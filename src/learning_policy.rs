@@ -1,7 +1,7 @@
 use tch::nn::VarStore;
 use sztorm::agent::{AgentTrajectory, Policy};
 
-use sztorm::protocol::DomainParameters;
+use sztorm::domain::DomainParameters;
 use sztorm::state::agent::{ScoringInformationSet};
 use crate::error::SztormRLError;
 

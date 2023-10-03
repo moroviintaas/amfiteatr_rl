@@ -1,7 +1,7 @@
 use tch::TchError;
 use thiserror::Error;
 use sztorm::error::SztormError;
-use sztorm::protocol::DomainParameters;
+use sztorm::domain::DomainParameters;
 
 
 #[derive(Error, Debug)]

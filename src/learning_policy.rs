@@ -6,7 +6,7 @@ use sztorm::state::agent::{ScoringInformationSet};
 use crate::error::SztormRLError;
 
 pub trait LearningNetworkPolicy<DP: DomainParameters> : Policy<DP>
-where <Self as Policy<DP>>::StateType: ScoringInformationSet<DP>
+where <Self as Policy<DP>>::InfoSetType: ScoringInformationSet<DP>
 {
     type Network;
     type TrainConfig;
@@ -16,7 +16,7 @@ where <Self as Policy<DP>>::StateType: ScoringInformationSet<DP>
     fn var_store(&self) -> &VarStore;
     fn var_store_mut(&mut self) -> &mut VarStore;
 
-    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::StateType>]) -> Result<(), SztormRLError<DP>>;
+    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), SztormRLError<DP>>;
     fn config(&self) -> &Self::TrainConfig;
 
 }

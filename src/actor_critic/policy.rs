@@ -251,9 +251,9 @@ impl<DP: DomainParameters,
     /*ActInterpreter*/
 >
 where <DP as DomainParameters>::ActionType: ActionTensor{
-    type StateType = InfoSet;
+    type InfoSetType = InfoSet;
 
-    fn select_action(&self, state: &Self::StateType) -> Option<DP::ActionType> {
+    fn select_action(&self, state: &Self::InfoSetType) -> Option<DP::ActionType> {
         //let state_tensor = self.state_converter.build_tensor(state)
         //    .unwrap_or_else(|_| panic!("Failed converting state to Tensor: {:?}", state));
         //let state_tensor = self.state_converter.make_tensor(state);
@@ -302,7 +302,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
     }
 
 
-    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::StateType>]) -> Result<(), SztormRLError<DP>> {
+    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), SztormRLError<DP>> {
         let device = self.network.device();
         let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
            acc + x.list().len()

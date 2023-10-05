@@ -269,7 +269,7 @@ where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Ite
         self.network.var_store_mut()
     }
 
-    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::StateType>]) -> Result<(), SztormRLError<DP>> {
+    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), SztormRLError<DP>> {
         let _device = self.network.device();
         let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
            acc + x.list().len()
@@ -361,9 +361,9 @@ impl<
     A2T: WayToTensor
 > Policy<DP> for QLearningPolicy<DP, InfoSet, IS2T, A2T>
 where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>{
-    type StateType = InfoSet;
+    type InfoSetType = InfoSet;
 
-    fn select_action(&self, state: &Self::StateType) -> Option<DP::ActionType> {
+    fn select_action(&self, state: &Self::InfoSetType) -> Option<DP::ActionType> {
 
         let mut actions = Vec::new();
         let q_predictions : Vec<_>/*<Tensor>*/ = state.available_actions().into_iter().map(|a|{

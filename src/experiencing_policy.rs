@@ -16,9 +16,9 @@ pub trait SelfExperiencingPolicy<DP:  DomainParameters>{
 }
 
 pub trait UpdatablePolicy<DP:  DomainParameters>: Policy<DP>
-where <Self as Policy<DP>>::StateType: ScoringInformationSet<DP>{
+where <Self as Policy<DP>>::InfoSetType: ScoringInformationSet<DP>{
     type PolicyUpdateError: Error;
-    fn policy_update(&mut self, traces: &[AgentTrajectory<DP, <Self as Policy<DP>>::StateType>])
+    fn policy_update(&mut self, traces: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>])
         -> Result<(), Self::PolicyUpdateError>;
 
 }

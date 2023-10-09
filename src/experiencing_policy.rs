@@ -1,7 +1,6 @@
 use std::error::Error;
-use sztorm::agent::{AgentTrajectory, Policy};
+use sztorm::agent::{AgentTrajectory, Policy, ScoringInformationSet};
 use sztorm::domain::DomainParameters;
-use sztorm::state::agent::ScoringInformationSet;
 
 
 pub trait SelfExperiencingPolicy<DP:  DomainParameters>{

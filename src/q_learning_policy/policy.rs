@@ -6,11 +6,10 @@ use rand::distributions::uniform::{UniformFloat, UniformSampler};
 use tch::Kind::Float;
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, Reduction, Tensor};
-use sztorm::agent::{AgentTrajectory, Policy};
+use sztorm::agent::{AgentTrajectory, InformationSet, Policy, ScoringInformationSet};
 use sztorm::domain::DomainParameters;
 
 
-use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::error::SztormRLError;
 use crate::{LearningNetworkPolicy, TrainConfig};
 use crate::tensor_repr::{ConvertToTensor, FloatTensorReward, WayToTensor};
@@ -302,7 +301,7 @@ where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Ite
             }).collect();
             */
             let mut state_action_q_tensor_vec_t: Vec<Tensor>  = t.list().iter().map(|step|{
-                let s = step.step_state().to_tensor(&self.info_set_way);
+                let s = step.step_info_set().to_tensor(&self.info_set_way);
                 let a = step.taken_action().to_tensor(&self.action_way);
                 let t = Tensor::cat(&[s,a], 0);
                 let q = (self.network.net())(&t);

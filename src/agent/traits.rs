@@ -1,6 +1,5 @@
-use sztorm::agent::{AutomaticAgent, AutomaticAgentRewarded, PolicyAgent, StatefulAgent, TracingAgent};
+use sztorm::agent::{AutomaticAgent, AutomaticAgentRewarded, PolicyAgent, ScoringInformationSet, StatefulAgent, TracingAgent};
 use sztorm::domain::DomainParameters;
-use sztorm::state::agent::ScoringInformationSet;
 use crate::LearningNetworkPolicy;
 
 pub trait NetworkLearningAgent<DP: DomainParameters>: AutomaticAgentRewarded<DP>  + PolicyAgent<DP> + TracingAgent<DP, <Self as StatefulAgent<DP>>::State>

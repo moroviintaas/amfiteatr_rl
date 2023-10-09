@@ -4,10 +4,9 @@ use log::{debug, trace};
 use tch::Kind::{Float};
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, kind, Tensor};
-use sztorm::agent::{AgentTrajectory, Policy};
+use sztorm::agent::{AgentTrajectory, InformationSet, Policy, ScoringInformationSet};
 use sztorm::error::SztormError;
 use sztorm::domain::DomainParameters;
-use sztorm::state::agent::{InformationSet, ScoringInformationSet};
 use crate::error::SztormRLError;
 use crate::experiencing_policy::SelfExperiencingPolicy;
 use crate::{LearningNetworkPolicy, TrainConfig};
@@ -95,7 +94,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
 
             let mut state_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
                 //self.state_converter.make_tensor(step.step_state())
-                step.step_state().to_tensor(&self.convert_way)
+                step.step_info_set().to_tensor(&self.convert_way)
             }).collect();
 
             let mut action_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
@@ -177,7 +176,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
 
             let mut state_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
                 //self.state_converter.make_tensor(step.step_state())
-                step.step_state().to_tensor(&self.convert_way)
+                step.step_info_set().to_tensor(&self.convert_way)
             }).collect();
 
             let mut action_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
@@ -324,7 +323,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
 
             let mut state_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
                 //self.state_converter.make_tensor(step.step_state())
-                step.step_state().to_tensor(&self.convert_way)
+                step.step_info_set().to_tensor(&self.convert_way)
             }).collect();
 
             let mut action_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{

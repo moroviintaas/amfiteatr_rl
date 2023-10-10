@@ -6,7 +6,7 @@ use rand::distributions::uniform::{UniformFloat, UniformSampler};
 use tch::Kind::Float;
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, Reduction, Tensor};
-use sztorm::agent::{AgentTrajectory, InformationSet, Policy, ScoringInformationSet};
+use sztorm::agent::{AgentTrajectory, InformationSet, Policy, PresentPossibleActions, ScoringInformationSet};
 use sztorm::domain::DomainParameters;
 
 
@@ -124,11 +124,11 @@ pub struct QLearningPolicy<
 impl
 <
     DP: DomainParameters,
-    InfoSet: ScoringInformationSet<DP> + Debug + ConvertToTensor<IS2T>,
+    InfoSet: ScoringInformationSet<DP> + Debug + ConvertToTensor<IS2T> + PresentPossibleActions<DP>,
     IS2T: WayToTensor,
     A2T: WayToTensor
 > QLearningPolicy<DP, InfoSet, IS2T, A2T>
-where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>, {
+where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>, {
 
     pub fn new(
         network: NeuralNet1,
@@ -243,11 +243,11 @@ where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Ite
 impl
 <
     DP: DomainParameters,
-    InfoSet: ScoringInformationSet<DP> + Debug + ConvertToTensor<IS2T>,
+    InfoSet: ScoringInformationSet<DP> + Debug + ConvertToTensor<IS2T> + PresentPossibleActions<DP>,
     IS2T: WayToTensor,
     A2T: WayToTensor
 > LearningNetworkPolicy<DP> for QLearningPolicy<DP, InfoSet, IS2T, A2T>
-where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>,
+where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>,
 <DP as DomainParameters>::UniversalReward: FloatTensorReward{
     type Network = NeuralNet1;
     type TrainConfig = TrainConfig;
@@ -355,11 +355,11 @@ where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Ite
 
 impl<
     DP: DomainParameters,
-    InfoSet: InformationSet<DP> + Debug + ConvertToTensor<IS2T>,
+    InfoSet: InformationSet<DP> + Debug + ConvertToTensor<IS2T> + PresentPossibleActions<DP>,
     IS2T: WayToTensor,
     A2T: WayToTensor
 > Policy<DP> for QLearningPolicy<DP, InfoSet, IS2T, A2T>
-where <<InfoSet as InformationSet<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>{
+where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>{
     type InfoSetType = InfoSet;
 
     fn select_action(&self, state: &Self::InfoSetType) -> Option<DP::ActionType> {

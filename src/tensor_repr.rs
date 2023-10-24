@@ -1,8 +1,8 @@
 use std::error::Error;
 use std::fmt::{Debug, Display};
 use tch::{Tensor};
-use sztorm::domain::{Action, Reward};
-use sztorm::error::{ConvertError};
+use amfi::domain::{Action, Reward};
+use amfi::error::{ConvertError};
 
 
 

@@ -1,8 +1,8 @@
 use tch::nn::VarStore;
-use sztorm::agent::{AgentTrajectory, Policy, ScoringInformationSet};
+use amfi::agent::{AgentTrajectory, Policy, ScoringInformationSet};
 
-use sztorm::domain::DomainParameters;
-use crate::error::SztormRLError;
+use amfi::domain::DomainParameters;
+use crate::error::AmfiRLError;
 
 pub trait LearningNetworkPolicy<DP: DomainParameters> : Policy<DP>
 where <Self as Policy<DP>>::InfoSetType: ScoringInformationSet<DP>
@@ -15,7 +15,7 @@ where <Self as Policy<DP>>::InfoSetType: ScoringInformationSet<DP>
     fn var_store(&self) -> &VarStore;
     fn var_store_mut(&mut self) -> &mut VarStore;
 
-    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), SztormRLError<DP>>;
+    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), AmfiRLError<DP>>;
     fn config(&self) -> &Self::TrainConfig;
 
 }

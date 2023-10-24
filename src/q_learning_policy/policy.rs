@@ -6,11 +6,11 @@ use rand::distributions::uniform::{UniformFloat, UniformSampler};
 use tch::Kind::Float;
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, Reduction, Tensor};
-use sztorm::agent::{AgentTrajectory, InformationSet, Policy, PresentPossibleActions, ScoringInformationSet};
-use sztorm::domain::DomainParameters;
+use amfi::agent::{AgentTrajectory, InformationSet, Policy, PresentPossibleActions, ScoringInformationSet};
+use amfi::domain::DomainParameters;
 
 
-use crate::error::SztormRLError;
+use crate::error::AmfiRLError;
 use crate::{LearningNetworkPolicy, TrainConfig};
 use crate::tensor_repr::{ConvertToTensor, FloatTensorReward, WayToTensor};
 use crate::torch_net::NeuralNet1;
@@ -155,7 +155,7 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
     }
 
     pub fn batch_train_env_rewards(&mut self, trajectories: &[AgentTrajectory<DP, InfoSet>], gamma: f64)
-    -> Result<(), SztormError<DP>>
+    -> Result<(), AmfiError<DP>>
     where    <DP as DomainParameters>::UniversalReward: FloatTensorReward {
         let device = self.network.device();
         let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
@@ -268,7 +268,7 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
         self.network.var_store_mut()
     }
 
-    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), SztormRLError<DP>> {
+    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), AmfiRLError<DP>> {
         let _device = self.network.device();
         let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
            acc + x.list().len()

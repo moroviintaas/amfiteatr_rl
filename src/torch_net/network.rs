@@ -22,7 +22,7 @@ pub type QValueNet = NeuralNet<Tensor>;
 /// ```
 /// use tch::{Device, nn, Tensor};
 /// use tch::nn::{Adam, VarStore};
-/// use sztorm_rl::torch_net::{A2CNet, NeuralNet2, TensorA2C};
+/// use amfi_rl::torch_net::{A2CNet, NeuralNet2, TensorA2C};
 /// let device = Device::cuda_if_available();
 /// let var_store = VarStore::new(device);
 /// let number_of_actions = 33_i64;
@@ -68,7 +68,7 @@ impl<Output: NetOutput> NeuralNet< Output>{
     /// ```
     /// use tch::{Device, Kind, nn, Tensor};
     /// use tch::nn::VarStore;
-    /// use sztorm_rl::torch_net::NeuralNet;
+    /// use amfi_rl::torch_net::NeuralNet;
     /// let device = Device::cuda_if_available();
     /// let var_store = VarStore::new(device);
     /// let neural_net = NeuralNet::new(var_store, |path|{
@@ -97,7 +97,7 @@ impl<Output: NetOutput> NeuralNet< Output>{
 /// ```
 /// use tch::{Device, nn};
 /// use tch::nn::VarStore;
-/// use sztorm_rl::torch_net::NeuralNetCloner;
+/// use amfi_rl::torch_net::NeuralNetCloner;
 /// let nc = NeuralNetCloner::new(|path|{
 ///     let seq = nn::seq()
 ///         .add(nn::linear(path / "input", 32, 4, Default::default()));

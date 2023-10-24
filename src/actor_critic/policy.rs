@@ -4,10 +4,10 @@ use log::{debug, trace};
 use tch::Kind::{Float};
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, kind, Tensor};
-use sztorm::agent::{AgentTrajectory, InformationSet, Policy, ScoringInformationSet};
-use sztorm::error::SztormError;
-use sztorm::domain::DomainParameters;
-use crate::error::SztormRLError;
+use amfi::agent::{AgentTrajectory, InformationSet, Policy, ScoringInformationSet};
+use amfi::error::AmfiError;
+use amfi::domain::DomainParameters;
+use crate::error::AmfiRLError;
 use crate::experiencing_policy::SelfExperiencingPolicy;
 use crate::{LearningNetworkPolicy, TrainConfig};
 use crate::tensor_repr::{ActionTensor, ConvertToTensor, FloatTensorReward, WayToTensor};
@@ -68,7 +68,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
 
 
     pub fn batch_train_env_rewards(&mut self, trajectories: &[AgentTrajectory<DP, InfoSet>], gamma: f64)
-        -> Result<(), SztormError<DP>>
+        -> Result<(), AmfiError<DP>>
     where /*for<'a> Tensor: From<&'a <DP as DomainParameters>::UniversalReward>,*/
     <DP as DomainParameters>::UniversalReward: FloatTensorReward {
 
@@ -152,7 +152,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
     }
 
     pub fn batch_train_state_rewards(&mut self, trajectories: &[AgentTrajectory<DP, InfoSet>], gamma: f64)
-        -> Result<(), SztormError<DP>>
+        -> Result<(), AmfiError<DP>>
     where
     <InfoSet as ScoringInformationSet<DP>>::RewardType: FloatTensorReward{
         let device = self.network.device();
@@ -301,7 +301,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
     }
 
 
-    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), SztormRLError<DP>> {
+    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), AmfiRLError<DP>> {
         let device = self.network.device();
         let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
            acc + x.list().len()

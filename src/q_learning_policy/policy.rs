@@ -81,25 +81,6 @@ impl QSelector{
 
     }*/
 
-    /*
-    pub fn select_max<R: Reward + Ord>(&self, values: &[R]) -> Option<usize>{
-        values.iter().enumerate().max_by(|(_, a), (_, b)| a.cmp(b)).map(|(i,_)| i)
-    }
-    //pub fn select_linear<>:
-
-    pub fn select_index<R: ProportionalReward<f32> + Ord>(&self, values: &[R] ) -> Option<usize>{
-        match self{
-            QSelector::Max => self.select_max(values),
-            QSelector::MultinomialLinear => {
-                todo!()
-            }
-            QSelector::MultinomialLogits => {
-                todo!()
-            }
-        }
-    }
-
-     */
 }
 
 pub struct QLearningPolicy<
@@ -146,96 +127,7 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
             training_config,
             _dp: Default::default(), _is: Default::default()}
     }
-/*
-    pub fn var_store_mut(&mut self) -> &mut VarStore{
-        self.network.var_store_mut()
-    }
-    pub fn var_store(& self) -> & VarStore{
-        self.network.var_store()
-    }
 
-    pub fn batch_train_env_rewards(&mut self, trajectories: &[AgentTrajectory<DP, InfoSet>], gamma: f64)
-    -> Result<(), AmfiError<DP>>
-    where    <DP as DomainParameters>::UniversalReward: FloatTensorReward {
-        let device = self.network.device();
-        let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
-           acc + x.list().len()
-        });
-        let tmp_capacity_estimate = trajectories.iter().map(|x|{
-            x.list().len()
-        }).max().unwrap_or(0);
-        let batch_size_estimate = trajectories.iter().map(|x|{
-            x.list().len()
-        }).sum();
-        let mut qval_tensor_vec_t = Vec::with_capacity(tmp_capacity_estimate);
-        let mut qval_tensor_vec = Vec::with_capacity(batch_size_estimate);
-        let mut state_action_tensor_vec = Vec::<Tensor>::with_capacity(capacity_estimate);
-        let mut reward_tensor_vec = Vec::<Tensor>::with_capacity(capacity_estimate);
-        let mut discounted_rewards_tensor_vec: Vec<Tensor> = Vec::with_capacity(tmp_capacity_estimate);
-        for t in trajectories{
-
-
-            if t.list().is_empty(){
-                continue;
-            }
-            let steps_in_trajectory = t.list().len();
-            /*
-            let mut state_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
-                step.step_state().to_tensor(&self.convert_way)
-            }).collect();
-
-            let mut action_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
-                step.taken_action().to_tensor()
-            }).collect();
-            */
-            let mut state_action_q_tensor_vec_t: Vec<Tensor>  = t.list().iter().map(|step|{
-                let s = step.step_state().to_tensor(&self.info_set_way);
-                let a = step.taken_action().to_tensor(&self.action_way);
-                let t = Tensor::cat(&[s,a], 0);
-                let q = (self.network.net())(&t);
-                qval_tensor_vec_t.push(q);
-                t
-
-            }).collect();
-
-
-
-            let final_score_t: Tensor =  t.list().last().unwrap().universal_score_after().to_tensor();
-            debug!("Final score tensor shape: {:?}", final_score_t.size());
-            discounted_rewards_tensor_vec.clear();
-            for _ in 0..=steps_in_trajectory{
-                discounted_rewards_tensor_vec.push(Tensor::zeros([1], (Kind::Float, self.network.device())));
-            }
-            debug!("Discounted_rewards_tensor_vec len before inserting: {}", discounted_rewards_tensor_vec.len());
-            //let mut discounted_rewards_tensor_vec: Vec<Tensor> = vec![Tensor::zeros(DP::UniversalReward::total_size(), (Kind::Float, self.network.device())); steps_in_trajectory+1];
-            discounted_rewards_tensor_vec.last_mut().unwrap().copy_(&final_score_t);
-            for s in (0..discounted_rewards_tensor_vec.len()-1).rev(){
-                //println!("{}", s);
-                let r_s = &t[s].step_universal_reward().to_tensor() + (&discounted_rewards_tensor_vec[s+1] * gamma);
-                discounted_rewards_tensor_vec[s].copy_(&r_s);
-            }
-            discounted_rewards_tensor_vec.pop();
-            debug!("Discounted rewards_tensor_vec after inserting");
-
-            state_action_tensor_vec.append(&mut state_action_q_tensor_vec_t);
-            reward_tensor_vec.append(&mut discounted_rewards_tensor_vec);
-            qval_tensor_vec.append(&mut qval_tensor_vec_t);
-
-        }
-        let state_action_batch = Tensor::stack(&state_action_tensor_vec[..], 0);
-        let results_batch = Tensor::stack(&reward_tensor_vec[..], 0);
-        let q_batch = Tensor::stack(&qval_tensor_vec[..], 0);
-        debug!("Result batch shape: {:?}", results_batch.size());
-        debug!("Q result batch shape: {:?}", q_batch.size());
-
-        //let diff = &results_batch - q_batch;
-        //let loss = (&diff * &diff).mean(Float);
-        let loss = q_batch.mse_loss(&results_batch, Reduction::Mean);
-        self.optimizer.backward_step_clip(&loss, 0.5);
-        Ok(())
-    }
-
- */
 }
 
 
@@ -269,90 +161,13 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
         self.network.var_store_mut()
     }
 
-    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), AmfiRLError<DP>> {
-        let _device = self.network.device();
-        let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
-           acc + x.list().len()
-        });
-        let tmp_capacity_estimate = trajectories.iter().map(|x|{
-            x.list().len()
-        }).max().unwrap_or(0);
-        let batch_size_estimate = trajectories.iter().map(|x|{
-            x.list().len()
-        }).sum();
-        let mut qval_tensor_vec_t = Vec::with_capacity(tmp_capacity_estimate);
-        let mut qval_tensor_vec = Vec::with_capacity(batch_size_estimate);
-        let mut state_action_tensor_vec = Vec::<Tensor>::with_capacity(capacity_estimate);
-        let mut reward_tensor_vec = Vec::<Tensor>::with_capacity(capacity_estimate);
-        let mut discounted_rewards_tensor_vec: Vec<Tensor> = Vec::with_capacity(tmp_capacity_estimate);
-        for t in trajectories{
 
-
-            if t.list().is_empty(){
-                continue;
-            }
-            let steps_in_trajectory = t.list().len();
-            /*
-            let mut state_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
-                step.step_state().to_tensor(&self.convert_way)
-            }).collect();
-
-            let mut action_tensor_vec_t: Vec<Tensor> = t.list().iter().map(|step|{
-                step.taken_action().to_tensor()
-            }).collect();
-            */
-            let mut state_action_q_tensor_vec_t: Vec<Tensor>  = t.list().iter().map(|step|{
-                let s = step.step_info_set().to_tensor(&self.info_set_way);
-                let a = step.taken_action().to_tensor(&self.action_way);
-                let t = Tensor::cat(&[s,a], 0);
-                let q = (self.network.net())(&t);
-                qval_tensor_vec_t.push(q);
-                t
-
-            }).collect();
-
-
-
-            let final_score_t: Tensor =  t.list().last().unwrap().universal_score_after().to_tensor();
-            debug!("Final score tensor shape: {:?}", final_score_t.size());
-            discounted_rewards_tensor_vec.clear();
-            for _ in 0..=steps_in_trajectory{
-                discounted_rewards_tensor_vec.push(Tensor::zeros([1], (Kind::Float, self.network.device())));
-            }
-            debug!("Discounted_rewards_tensor_vec len before inserting: {}", discounted_rewards_tensor_vec.len());
-            //let mut discounted_rewards_tensor_vec: Vec<Tensor> = vec![Tensor::zeros(DP::UniversalReward::total_size(), (Kind::Float, self.network.device())); steps_in_trajectory+1];
-            discounted_rewards_tensor_vec.last_mut().unwrap().copy_(&final_score_t);
-            for s in (0..discounted_rewards_tensor_vec.len()-1).rev(){
-                //println!("{}", s);
-                let r_s = &t[s].step_universal_reward().to_tensor().to_device(self.network.device()) + (&discounted_rewards_tensor_vec[s+1] * self.training_config.gamma);
-                discounted_rewards_tensor_vec[s].copy_(&r_s);
-            }
-            discounted_rewards_tensor_vec.pop();
-            debug!("Discounted rewards_tensor_vec after inserting");
-
-            state_action_tensor_vec.append(&mut state_action_q_tensor_vec_t);
-            reward_tensor_vec.append(&mut discounted_rewards_tensor_vec);
-            qval_tensor_vec.append(&mut qval_tensor_vec_t);
-
-        }
-        let _state_action_batch = Tensor::stack(&state_action_tensor_vec[..], 0);
-        let results_batch = Tensor::stack(&reward_tensor_vec[..], 0);
-        let q_batch = Tensor::stack(&qval_tensor_vec[..], 0);
-        debug!("Result batch shape: {:?}", results_batch.size());
-        debug!("Q result batch shape: {:?}", q_batch.size());
-
-        //let diff = &results_batch - q_batch;
-        //let loss = (&diff * &diff).mean(Float);
-        let loss = q_batch.mse_loss(&results_batch, Reduction::Mean);
-        self.optimizer.backward_step_clip(&loss, 0.5);
-        Ok(())
-    }
 
     fn config(&self) -> &Self::TrainConfig {
         &self.training_config
     }
 
-    fn train_on_trajectories<R: Fn(&AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>) -> Tensor>(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>], gamma: f64, reward_f: R) -> Result<(), AmfiRLError<DP>> {
+    fn train_on_trajectories<R: Fn(&AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>) -> Tensor>(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>], reward_f: R) -> Result<(), AmfiRLError<DP>> {
         let _device = self.network.device();
         let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
            acc + x.list().len()

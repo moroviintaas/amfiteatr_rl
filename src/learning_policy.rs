@@ -6,6 +6,11 @@ use amfi::domain::DomainParameters;
 use crate::error::AmfiRLError;
 use crate::tensor_repr::FloatTensorReward;
 
+
+pub trait DiscountAggregator{
+    fn discount_factor(&self) -> f64;
+}
+
 pub trait LearningNetworkPolicy<DP: DomainParameters> : Policy<DP>
 where <Self as Policy<DP>>::InfoSetType: ScoringInformationSet<DP>
 {
@@ -17,29 +22,26 @@ where <Self as Policy<DP>>::InfoSetType: ScoringInformationSet<DP>
     fn var_store(&self) -> &VarStore;
     fn var_store_mut(&mut self) -> &mut VarStore;
 
-    fn batch_train_on_universal_rewards(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), AmfiRLError<DP>>;
     fn config(&self) -> &Self::TrainConfig;
     fn train_on_trajectories<R: Fn(&AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>) -> Tensor>(
         &mut self,
         trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>],
-        gamma: f64,
         reward_f: R,
     ) -> Result<(), AmfiRLError<DP>>;
 
     fn train_on_trajectories_env_reward(&mut self,
-        trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>],
-        gamma: f64) -> Result<(), AmfiRLError<DP>>
+        trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), AmfiRLError<DP>>
     where <DP as DomainParameters>::UniversalReward: FloatTensorReward{
 
-        self.train_on_trajectories(trajectories, gamma, |step| step.step_universal_reward().to_tensor())
+        self.train_on_trajectories(trajectories,  |step| step.step_universal_reward().to_tensor())
     }
 
     fn train_on_trajectories_info_set_rewards(&mut self,
                                               trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>],
-                                              gamma: f64) -> Result<(), AmfiRLError<DP>>
+                                              ) -> Result<(), AmfiRLError<DP>>
     where <<Self as Policy<DP>>::InfoSetType as ScoringInformationSet<DP>>::RewardType: FloatTensorReward{
 
-        self.train_on_trajectories(trajectories, gamma, |step| step.step_subjective_reward().to_tensor())
+        self.train_on_trajectories(trajectories,  |step| step.step_subjective_reward().to_tensor())
     }
 
 }

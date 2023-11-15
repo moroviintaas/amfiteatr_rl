@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 amfi = {path = "../amfi" }
-tch = "0.13.0"
+tch = "0.14.0"
 log = "0.4.19"
 thiserror = "1.0.40"
 rand = "0.8.5"

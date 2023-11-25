@@ -1,4 +1,4 @@
-use amfi::agent::{AutomaticAgent, AutomaticAgentRewarded, PolicyAgent, ScoringInformationSet, StatefulAgent, TracingAgent};
+use amfi::agent::{AutomaticAgent, AutomaticAgentRewarded, PolicyAgent, ReinitAgent, ReseedAgent, ScoringInformationSet, StatefulAgent, TracingAgent};
 use amfi::domain::DomainParameters;
 use crate::LearningNetworkPolicy;
 
@@ -27,3 +27,8 @@ impl <DP: DomainParameters, T: AutomaticAgent<DP>  + PolicyAgent<DP>
 TestingAgent<DP> for T
 where <T as StatefulAgent<DP>>::InfoSetType: ScoringInformationSet<DP>
 {}
+
+pub trait RlModelAgent<DP: DomainParameters, Seed>: AutomaticAgentRewarded<DP> + ReseedAgent<DP, Seed>
+{
+
+}

@@ -214,6 +214,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
         let advantages = results_batch.to_device(device) - critic;
         let value_loss = (&advantages * &advantages).mean(Float);
         let action_loss = (-advantages.detach() * action_log_probs).mean(Float);
+        self.optimizer.zero_grad();
         let loss = value_loss * 0.5 + action_loss - dist_entropy * 0.01;
         self.optimizer.backward_step_clip(&loss, 0.5);
 

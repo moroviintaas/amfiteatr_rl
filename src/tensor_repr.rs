@@ -3,7 +3,8 @@ use std::fmt::{Debug, Display};
 use tch::{Tensor};
 use amfi::domain::{Action, Reward};
 use amfi::error::{ConvertError};
-
+use crate::error::AmfiRLError::TensorRepresentation;
+use crate::error::TensorRepresentationError;
 
 
 pub trait TensorBuilder<T>: Send{
@@ -17,18 +18,44 @@ pub trait ConvStateToTensor<T>: Send{
 
 pub trait WayToTensor: Send + Default{
     fn desired_shape(&self) -> &[i64];
+
+    fn desired_shape_flatten(&self) -> i64{
+        self.desired_shape().iter().product()
+    }
 }
 
-pub trait ConvertToTensor<W: WayToTensor>{
-    fn to_tensor(&self, way: &W) -> Tensor;
+pub trait ConvertToTensor<W: WayToTensor> : Debug{
+    fn try_to_tensor(&self, way: &W) -> Result<Tensor, TensorRepresentationError>;
+
+    fn to_tensor(&self, way: &W) -> Tensor{
+        self.try_to_tensor(way).unwrap()
+    }
+    fn try_to_tensor_flat(&self, way: &W) -> Result<Tensor, TensorRepresentationError>{
+        let t1 = self.try_to_tensor(way)?;
+        t1.f_flatten(0, -1).map_err(|e|{
+            TensorRepresentationError::Torch {
+                error: e,
+                context: format!("Flattenning tensor {t1:?} from information set: {:?}", self)
+            }
+        })
+    }
+
+    fn to_tensor_flat(&self, way: &W) -> Tensor{
+        let t1 = self.to_tensor(way);
+        //let dim = t1.dim() as i64;
+        t1.flatten(0, -1)
+    }
     fn tensor_shape(way: &W) -> &[i64]{
         way.desired_shape()
+    }
+    fn tensor_length_flatten(way: &W) -> i64{
+        way.desired_shape().iter().product()
     }
 }
 
 impl<W: WayToTensor, T: ConvertToTensor<W>> ConvertToTensor<W> for Box<T>{
-    fn to_tensor(&self, way: &W) -> Tensor {
-        self.as_ref().to_tensor(way)
+    fn try_to_tensor(&self, way: &W) -> Result<Tensor, TensorRepresentationError> {
+        self.as_ref().try_to_tensor(way)
     }
 }
 

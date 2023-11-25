@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 use tch::{Device, TchError, Tensor};
-use tch::nn::{Optimizer, OptimizerConfig, Path, VarStore};
+use tch::nn::{Optimizer, OptimizerConfig, Path, Sequential, VarStore};
 use crate::torch_net::{NetOutput, TensorA2C};
 
 pub struct NeuralNet<Output: NetOutput>{
@@ -97,8 +97,8 @@ impl<Output: NetOutput> NeuralNet< Output>{
 /// ```
 /// use tch::{Device, nn};
 /// use tch::nn::VarStore;
-/// use amfi_rl::torch_net::NeuralNetCloner;
-/// let nc = NeuralNetCloner::new(|path|{
+/// use amfi_rl::torch_net::NeuralNetTemplate;
+/// let nc = NeuralNetTemplate::new(|path|{
 ///     let seq = nn::seq()
 ///         .add(nn::linear(path / "input", 32, 4, Default::default()));
 ///     move |tensor| {tensor.apply(&seq)}
@@ -107,7 +107,7 @@ impl<Output: NetOutput> NeuralNet< Output>{
 /// let (net1, net2) = (nc.get_net_closure(), nc.get_net_closure());
 ///
 /// ```
-pub struct NeuralNetCloner<
+pub struct NeuralNetTemplate<
     Output: NetOutput,
     N: 'static + Send + Fn(&Tensor) -> Output,
     F: Fn(&Path) -> N + Clone>{
@@ -125,7 +125,7 @@ impl<
     O: NetOutput,
     N: 'static + Send + Fn(&Tensor) -> O,
     F: Fn(&Path) -> N + Clone>
-NeuralNetCloner<O, N, F>{
+NeuralNetTemplate<O, N, F>{
 
     pub fn new(net_closure: F) -> Self{
         Self{
@@ -134,6 +134,16 @@ NeuralNetCloner<O, N, F>{
             net_closure
         }
     }
+    /*
+    pub fn new_actor_critic<H: Fn(Sequential) -> Sequential> -> Self(
+        input_dim: i64, actor_dim: i64, critic_dim: i64, hidden: H){
+
+        NeuralNetTemplate::new(|path|{
+            let seq = nn::seq()
+                .add(nn::linear)
+        })
+
+    }*/
 
     pub fn get_net_closure(&self) -> F{
         self.net_closure.clone()

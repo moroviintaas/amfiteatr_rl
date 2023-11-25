@@ -16,11 +16,14 @@ pub trait ConvStateToTensor<T>: Send{
 }
 
 pub trait WayToTensor: Send + Default{
-    fn desired_shape() -> &'static[i64];
+    fn desired_shape(&self) -> &[i64];
 }
 
 pub trait ConvertToTensor<W: WayToTensor>{
     fn to_tensor(&self, way: &W) -> Tensor;
+    fn tensor_shape(way: &W) -> &[i64]{
+        way.desired_shape()
+    }
 }
 
 impl<W: WayToTensor, T: ConvertToTensor<W>> ConvertToTensor<W> for Box<T>{

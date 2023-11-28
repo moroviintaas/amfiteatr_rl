@@ -178,6 +178,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
             }
             debug!("Discounted_rewards_tensor_vec len before inserting: {}", discounted_rewards_tensor_vec.len());
             //let mut discounted_rewards_tensor_vec: Vec<Tensor> = vec![Tensor::zeros(DP::UniversalReward::total_size(), (Kind::Float, self.network.device())); steps_in_trajectory+1];
+            trace!("Reward stream: {:?}", t.list().iter().map(|x| reward_f(x)).collect::<Vec<Tensor>>());
             discounted_rewards_tensor_vec.last_mut().unwrap().copy_(&final_score_t);
             for s in (0..discounted_rewards_tensor_vec.len()-1).rev(){
                 //println!("{}", s);
@@ -185,6 +186,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
                 discounted_rewards_tensor_vec[s].copy_(&r_s);
             }
             discounted_rewards_tensor_vec.pop();
+            trace!("Discounted future payoffs tensor: {:?}", discounted_rewards_tensor_vec);
             debug!("Discounted rewards_tensor_vec after inserting");
 
             state_tensor_vec.append(&mut state_tensor_vec_t);

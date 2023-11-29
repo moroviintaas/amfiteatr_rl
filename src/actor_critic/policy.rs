@@ -5,7 +5,6 @@ use tch::Kind::{Float};
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, kind, Tensor};
 use amfi::agent::{AgentTraceStep, AgentTrajectory, InformationSet, Policy, ScoringInformationSet};
-use amfi::error::AmfiError;
 use amfi::domain::DomainParameters;
 use crate::error::AmfiRLError;
 use crate::experiencing_policy::SelfExperiencingPolicy;

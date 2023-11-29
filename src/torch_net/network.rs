@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 use tch::{Device, TchError, Tensor};
-use tch::nn::{Optimizer, OptimizerConfig, Path, Sequential, VarStore};
+use tch::nn::{Optimizer, OptimizerConfig, Path,  VarStore};
 use crate::torch_net::{NetOutput, TensorA2C};
 
 pub struct NeuralNet<Output: NetOutput>{

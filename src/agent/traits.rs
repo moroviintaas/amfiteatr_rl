@@ -1,4 +1,11 @@
-use amfi::agent::{AutomaticAgent, AutomaticAgentRewarded, PolicyAgent, ReinitAgent, ReseedAgent, ScoringInformationSet, StatefulAgent, TracingAgent};
+use amfi::agent::{
+    AutomaticAgent,
+    AutomaticAgentRewarded,
+    PolicyAgent,
+    ReseedAgent,
+    ScoringInformationSet,
+    StatefulAgent,
+    TracingAgent};
 use amfi::domain::DomainParameters;
 use crate::LearningNetworkPolicy;
 

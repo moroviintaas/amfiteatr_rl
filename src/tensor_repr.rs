@@ -3,7 +3,6 @@ use std::fmt::{Debug, Display};
 use tch::{Tensor};
 use amfi::domain::{Action, Reward};
 use amfi::error::{ConvertError};
-use crate::error::AmfiRLError::TensorRepresentation;
 use crate::error::TensorRepresentationError;
 
 

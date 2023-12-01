@@ -211,7 +211,7 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
             }
             debug!("Discounted_rewards_tensor_vec len before inserting: {}", discounted_rewards_tensor_vec.len());
             //let mut discounted_rewards_tensor_vec: Vec<Tensor> = vec![Tensor::zeros(DP::UniversalReward::total_size(), (Kind::Float, self.network.device())); steps_in_trajectory+1];
-            discounted_rewards_tensor_vec.last_mut().unwrap().copy_(&final_score_t);
+            //discounted_rewards_tensor_vec.last_mut().unwrap().copy_(&final_score_t);
             trace!("Reward stream: {:?}", t.list().iter().map(|x| reward_f(x)).collect::<Vec<Tensor>>());
             for s in (0..discounted_rewards_tensor_vec.len()-1).rev(){
                 //println!("{}", s);

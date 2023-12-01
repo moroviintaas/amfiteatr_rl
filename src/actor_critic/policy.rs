@@ -9,7 +9,7 @@ use amfi::domain::DomainParameters;
 use crate::error::AmfiRLError;
 use crate::experiencing_policy::SelfExperiencingPolicy;
 use crate::{LearningNetworkPolicy, TrainConfig};
-use crate::tensor_repr::{ActionTensor, ConvertToTensor, FloatTensorReward, WayToTensor};
+use crate::tensor_repr::{ActionTensor, ConvertToTensor, WayToTensor};
 use crate::torch_net::{A2CNet, TensorA2C};
 
 
@@ -114,7 +114,8 @@ impl<
     //StateConverter: ConvStateToTensor<InfoSet>>
     > LearningNetworkPolicy<DP> for ActorCriticPolicy<DP, InfoSet, InfoSetWay>
 where <DP as DomainParameters>::ActionType: ActionTensor,
-<InfoSet as ScoringInformationSet<DP>>::RewardType: FloatTensorReward{
+//<InfoSet as ScoringInformationSet<DP>>::RewardType: FloatTensorReward
+{
     type Network = A2CNet;
     type TrainConfig = TrainConfig;
 
@@ -135,10 +136,12 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
     }
 
     fn train_on_trajectories<R: Fn(&AgentTraceStep<DP, InfoSet>) -> Tensor>(
+
         &mut self,
         trajectories: &[AgentTrajectory<DP, InfoSet>],
         reward_f: R,
         ) -> Result<(), AmfiRLError<DP>>{
+
 
         let device = self.network.device();
         let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
@@ -152,6 +155,10 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
         let mut action_tensor_vec = Vec::<Tensor>::with_capacity(capacity_estimate);
         let mut discounted_rewards_tensor_vec: Vec<Tensor> = Vec::with_capacity(tmp_capacity_estimate);
         for t in trajectories{
+
+            if let Some(trace_step) = t.list().get(0){
+                debug!("Training nerual-network for agent {} (from first trace entry).", trace_step.step_info_set().agent_id());
+            }
 
 
             if t.list().is_empty(){
@@ -175,7 +182,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
             for _ in 0..=steps_in_trajectory{
                 discounted_rewards_tensor_vec.push(Tensor::zeros(final_score_t.size(), (Kind::Float, self.network.device())));
             }
-            debug!("Discounted_rewards_tensor_vec len before inserting: {}", discounted_rewards_tensor_vec.len());
+            trace!("Discounted_rewards_tensor_vec len before inserting: {}", discounted_rewards_tensor_vec.len());
             //let mut discounted_rewards_tensor_vec: Vec<Tensor> = vec![Tensor::zeros(DP::UniversalReward::total_size(), (Kind::Float, self.network.device())); steps_in_trajectory+1];
             trace!("Reward stream: {:?}", t.list().iter().map(|x| reward_f(x)).collect::<Vec<Tensor>>());
             discounted_rewards_tensor_vec.last_mut().unwrap().copy_(&final_score_t);
@@ -186,7 +193,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
             }
             discounted_rewards_tensor_vec.pop();
             trace!("Discounted future payoffs tensor: {:?}", discounted_rewards_tensor_vec);
-            debug!("Discounted rewards_tensor_vec after inserting");
+            trace!("Discounted rewards_tensor_vec after inserting");
 
             state_tensor_vec.append(&mut state_tensor_vec_t);
             action_tensor_vec.append(&mut action_tensor_vec_t);
@@ -199,17 +206,20 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
         debug!("Size of states batch: {:?}", states_batch.size());
         debug!("Size of result batch: {:?}", results_batch.size());
         debug!("Size of action batch: {:?}", action_batch.size());
+        trace!("State batch: {}", states_batch);
+        trace!("Result batch: {}", results_batch);
+        trace!("Action batch: {}", action_batch);
         let TensorA2C{actor, critic} = (self.network.net())(&states_batch);
         let log_probs = actor.log_softmax(-1, Kind::Float);
         let probs = actor.softmax(-1, Float);
         let action_log_probs = {
             let index =  action_batch.to_device(self.network.device());
-            debug!("Index: {}", index);
+            //trace!("Index: {}", index);
             log_probs.gather(1, &index, false)
         };
 
-        debug!("Action log probs size: {:?}", action_log_probs.size());
-        debug!("Probs size: {:?}", probs.size());
+        trace!("Action log probs size: {:?}", action_log_probs.size());
+        trace!("Probs size: {:?}", probs.size());
 
         let dist_entropy = (-log_probs * probs).sum_dim_intlist(-1, false, Float).mean(Float);
         let advantages = results_batch.to_device(device) - critic;

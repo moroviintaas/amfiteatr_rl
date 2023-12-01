@@ -12,7 +12,7 @@ use amfi::domain::DomainParameters;
 
 use crate::error::AmfiRLError;
 use crate::{LearningNetworkPolicy, TrainConfig};
-use crate::tensor_repr::{ConvertToTensor, FloatTensorReward, WayToTensor};
+use crate::tensor_repr::{ConvertToTensor,  WayToTensor};
 use crate::torch_net::NeuralNet1;
 use rand::thread_rng;
 
@@ -140,7 +140,7 @@ impl
     A2T: WayToTensor
 > LearningNetworkPolicy<DP> for QLearningPolicy<DP, InfoSet, IS2T, A2T>
 where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>,
-<DP as DomainParameters>::UniversalReward: FloatTensorReward,
+//<DP as DomainParameters>::UniversalReward: FloatTensorReward,
 <DP as DomainParameters>::ActionType: ConvertToTensor<A2T> {
     type Network = NeuralNet1;
     type TrainConfig = TrainConfig;

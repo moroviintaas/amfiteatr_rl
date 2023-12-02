@@ -240,6 +240,10 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
     fn config(&self) -> &Self::TrainConfig {
         &self.training_config
     }
+
+    fn switch_explore(&mut self, _enabled: bool) {
+
+    }
 }
 
 impl<

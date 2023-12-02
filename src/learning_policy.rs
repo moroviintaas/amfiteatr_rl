@@ -22,6 +22,8 @@ where <Self as Policy<DP>>::InfoSetType: ScoringInformationSet<DP>
     fn var_store(&self) -> &VarStore;
     fn var_store_mut(&mut self) -> &mut VarStore;
 
+    fn switch_explore(&mut self, enabled: bool);
+
     fn config(&self) -> &Self::TrainConfig;
     fn train_on_trajectories<R: Fn(&AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>) -> Tensor>(
         &mut self,

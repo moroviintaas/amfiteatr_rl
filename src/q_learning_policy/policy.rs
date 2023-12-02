@@ -29,7 +29,11 @@ pub enum QSelector{
 
 impl QSelector{
 
-    pub fn select_q_value_index(&self, q_vals: &Tensor) -> Option<usize>{
+    pub fn select_q_value_index(&self, q_vals: &Tensor, exploring_enabled: bool) -> Option<usize>{
+        if ! exploring_enabled{
+            let rv = f32::try_from(q_vals.argmax(None, false));
+            return rv.ok().and_then(|i| Some(i as usize))
+        }
         match self{
             Self::Max => {
                 //println!("{:?}", q_vals.size());
@@ -100,6 +104,7 @@ pub struct QLearningPolicy<
     action_way: A2T,
     q_selector: QSelector,
     training_config: TrainConfig,
+    explore_enabled: bool
 }
 
 impl
@@ -125,7 +130,8 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
             action_way,
             q_selector,
             training_config,
-            _dp: Default::default(), _is: Default::default()}
+            _dp: Default::default(), _is: Default::default(),
+            explore_enabled: true}
     }
 
 }
@@ -161,6 +167,9 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
         self.network.var_store_mut()
     }
 
+    fn switch_explore(&mut self, enabled: bool) {
+        self.explore_enabled = enabled;
+    }
 
 
     fn config(&self) -> &Self::TrainConfig {
@@ -263,7 +272,7 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
         }).collect();
         let q_pred = Tensor::cat(&q_predictions[..], 0);
 
-        let index = self.q_selector.select_q_value_index(&q_pred);
+        let index = self.q_selector.select_q_value_index(&q_pred, self.explore_enabled);
 
         index.and_then(|i| actions.get(i)).cloned()
 

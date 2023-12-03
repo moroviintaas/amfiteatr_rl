@@ -176,7 +176,14 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
         &self.training_config
     }
 
-    fn train_on_trajectories<R: Fn(&AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>) -> Tensor>(&mut self, trajectories: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>], reward_f: R) -> Result<(), AmfiRLError<DP>> {
+    fn train_on_trajectories<
+        R: Fn(&AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>) -> Tensor>(
+            &mut self,
+            trajectories: &[AgentTrajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>],
+            reward_f: R)
+        -> Result<(), AmfiRLError<DP>> {
+
+
         let _device = self.network.device();
         let capacity_estimate = trajectories.iter().fold(0, |acc, x|{
            acc + x.list().len()

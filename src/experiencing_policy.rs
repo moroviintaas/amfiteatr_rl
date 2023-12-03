@@ -1,5 +1,5 @@
 use std::error::Error;
-use amfi::agent::{AgentTrajectory, Policy, ScoringInformationSet};
+use amfi::agent::{AgentTraceStep, AgentTrajectory, Policy, ScoringInformationSet};
 use amfi::domain::DomainParameters;
 
 
@@ -17,7 +17,7 @@ pub trait SelfExperiencingPolicy<DP:  DomainParameters>{
 pub trait UpdatablePolicy<DP:  DomainParameters>: Policy<DP>
 where <Self as Policy<DP>>::InfoSetType: ScoringInformationSet<DP>{
     type PolicyUpdateError: Error;
-    fn policy_update(&mut self, traces: &[AgentTrajectory<DP, <Self as Policy<DP>>::InfoSetType>])
+    fn policy_update(&mut self, traces: &[AgentTrajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>])
         -> Result<(), Self::PolicyUpdateError>;
 
 }

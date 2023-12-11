@@ -4,7 +4,7 @@ use log::{debug, trace};
 use tch::Kind::{Float};
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, kind, Tensor};
-use amfi::agent::{AgentTraceStep, AgentTrajectory, InformationSet, Policy, ScoringInformationSet};
+use amfi::agent::{AgentTraceStep, AgentTrajectory, InformationSet, Policy, EvaluatedInformationSet};
 use amfi::domain::DomainParameters;
 use crate::error::AmfiRLError;
 use crate::experiencing_policy::SelfExperiencingPolicy;
@@ -34,7 +34,7 @@ pub struct ActorCriticPolicy<
 
 impl<
     DP: DomainParameters,
-    InfoSet: ScoringInformationSet<DP>  + Debug + ConvertToTensor<InfoSetWay>,
+    InfoSet: EvaluatedInformationSet<DP>  + Debug + ConvertToTensor<InfoSetWay>,
     InfoSetWay: WayToTensor,
     //InfoSet: ScoringInformationSet<DP> + Debug,
     //StateConverter: ConvStateToTensor<InfoSet>>
@@ -108,7 +108,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
 
 impl<
     DP: DomainParameters,
-    InfoSet: ScoringInformationSet<DP>  + Debug + ConvertToTensor<InfoSetWay>,
+    InfoSet: EvaluatedInformationSet<DP>  + Debug + ConvertToTensor<InfoSetWay>,
     InfoSetWay: WayToTensor,
     //InfoSet: ScoringInformationSet<DP> + Debug,
     //StateConverter: ConvStateToTensor<InfoSet>>

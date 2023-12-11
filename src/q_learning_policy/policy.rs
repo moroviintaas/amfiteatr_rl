@@ -6,7 +6,7 @@ use rand::distributions::uniform::{UniformFloat, UniformSampler};
 use tch::Kind::Float;
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, Reduction, Tensor};
-use amfi::agent::{AgentTraceStep, AgentTrajectory, InformationSet, Policy, PresentPossibleActions, ScoringInformationSet};
+use amfi::agent::{AgentTraceStep, AgentTrajectory, InformationSet, Policy, PresentPossibleActions, EvaluatedInformationSet};
 use amfi::domain::DomainParameters;
 
 
@@ -110,7 +110,7 @@ pub struct QLearningPolicy<
 impl
 <
     DP: DomainParameters,
-    InfoSet: ScoringInformationSet<DP> + Debug + ConvertToTensor<IS2T> + PresentPossibleActions<DP>,
+    InfoSet: EvaluatedInformationSet<DP> + Debug + ConvertToTensor<IS2T> + PresentPossibleActions<DP>,
     IS2T: WayToTensor,
     A2T: WayToTensor
 > QLearningPolicy<DP, InfoSet, IS2T, A2T>
@@ -141,7 +141,7 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
 impl
 <
     DP: DomainParameters,
-    InfoSet: ScoringInformationSet<DP> + Debug + ConvertToTensor<IS2T> + PresentPossibleActions<DP>,
+    InfoSet: EvaluatedInformationSet<DP> + Debug + ConvertToTensor<IS2T> + PresentPossibleActions<DP>,
     IS2T: WayToTensor,
     A2T: WayToTensor
 > LearningNetworkPolicy<DP> for QLearningPolicy<DP, InfoSet, IS2T, A2T>

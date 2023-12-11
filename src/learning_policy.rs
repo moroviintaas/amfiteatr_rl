@@ -1,6 +1,6 @@
 use tch::nn::VarStore;
 use tch::Tensor;
-use amfi::agent::{AgentTraceStep, AgentTrajectory, Policy, ScoringInformationSet};
+use amfi::agent::{AgentTraceStep, AgentTrajectory, Policy, EvaluatedInformationSet};
 
 use amfi::domain::DomainParameters;
 use crate::error::AmfiRLError;
@@ -12,7 +12,7 @@ pub trait DiscountAggregator{
 }
 
 pub trait LearningNetworkPolicy<DP: DomainParameters> : Policy<DP>
-where <Self as Policy<DP>>::InfoSetType: ScoringInformationSet<DP>
+where <Self as Policy<DP>>::InfoSetType: EvaluatedInformationSet<DP>
 {
     type Network;
     type TrainConfig;
@@ -41,7 +41,7 @@ where <Self as Policy<DP>>::InfoSetType: ScoringInformationSet<DP>
     fn train_on_trajectories_info_set_rewards(&mut self,
                                               trajectories: &[AgentTrajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>],
                                               ) -> Result<(), AmfiRLError<DP>>
-    where <<Self as Policy<DP>>::InfoSetType as ScoringInformationSet<DP>>::RewardType: FloatTensorReward{
+    where <<Self as Policy<DP>>::InfoSetType as EvaluatedInformationSet<DP>>::RewardType: FloatTensorReward{
 
         self.train_on_trajectories(trajectories,  |step| step.step_subjective_reward().to_tensor())
     }

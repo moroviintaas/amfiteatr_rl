@@ -135,6 +135,16 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
         self.network.var_store_mut()
     }
 
+    fn switch_explore(&mut self, _enabled: bool) {
+
+    }
+
+
+
+    fn config(&self) -> &Self::TrainConfig {
+        &self.training_config
+    }
+
     fn train_on_trajectories<R: Fn(&AgentTraceStep<DP, InfoSet>) -> Tensor>(
 
         &mut self,
@@ -233,16 +243,6 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
         self.optimizer.backward_step_clip(&loss, 0.5);
 
         Ok(())
-    }
-
-
-
-    fn config(&self) -> &Self::TrainConfig {
-        &self.training_config
-    }
-
-    fn switch_explore(&mut self, _enabled: bool) {
-
     }
 }
 

@@ -4,7 +4,7 @@ use log::{debug, trace};
 use tch::Kind::{Float};
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, kind, Tensor};
-use amfi::agent::{AgentTraceStep, AgentTrajectory, InformationSet, Policy, EvaluatedInformationSet};
+use amfi::agent::{AgentTraceStep, Trajectory, InformationSet, Policy, EvaluatedInformationSet};
 use amfi::domain::DomainParameters;
 use crate::error::AmfiRLError;
 use crate::experiencing_policy::SelfExperiencingPolicy;
@@ -148,7 +148,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
     fn train_on_trajectories<R: Fn(&AgentTraceStep<DP, InfoSet>) -> Tensor>(
 
         &mut self,
-        trajectories: &[AgentTrajectory<AgentTraceStep<DP, InfoSet>>],
+        trajectories: &[Trajectory<AgentTraceStep<DP, InfoSet>>],
         reward_f: R,
         ) -> Result<(), AmfiRLError<DP>>{
 

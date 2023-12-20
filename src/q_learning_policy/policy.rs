@@ -6,7 +6,7 @@ use rand::distributions::uniform::{UniformFloat, UniformSampler};
 use tch::Kind::Float;
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, Reduction, Tensor};
-use amfi::agent::{AgentTraceStep, AgentTrajectory, InformationSet, Policy, PresentPossibleActions, EvaluatedInformationSet};
+use amfi::agent::{AgentTraceStep, Trajectory, InformationSet, Policy, PresentPossibleActions, EvaluatedInformationSet};
 use amfi::domain::DomainParameters;
 
 
@@ -178,9 +178,9 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
 
     fn train_on_trajectories<
         R: Fn(&AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>) -> Tensor>(
-            &mut self,
-            trajectories: &[AgentTrajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>],
-            reward_f: R)
+        &mut self,
+        trajectories: &[Trajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>],
+        reward_f: R)
         -> Result<(), AmfiRLError<DP>> {
 
 

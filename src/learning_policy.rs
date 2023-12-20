@@ -1,6 +1,6 @@
 use tch::nn::VarStore;
 use tch::Tensor;
-use amfi::agent::{AgentTraceStep, AgentTrajectory, Policy, EvaluatedInformationSet};
+use amfi::agent::{AgentTraceStep, Trajectory, Policy, EvaluatedInformationSet};
 
 use amfi::domain::DomainParameters;
 use crate::error::AmfiRLError;
@@ -27,19 +27,19 @@ where <Self as Policy<DP>>::InfoSetType: EvaluatedInformationSet<DP>
     fn config(&self) -> &Self::TrainConfig;
     fn train_on_trajectories<R: Fn(&AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>) -> Tensor>(
         &mut self,
-        trajectories: &[AgentTrajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>],
+        trajectories: &[Trajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>],
         reward_f: R,
     ) -> Result<(), AmfiRLError<DP>>;
 
     fn train_on_trajectories_env_reward(&mut self,
-        trajectories: &[AgentTrajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>]) -> Result<(), AmfiRLError<DP>>
+                                        trajectories: &[Trajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>]) -> Result<(), AmfiRLError<DP>>
     where <DP as DomainParameters>::UniversalReward: FloatTensorReward{
 
         self.train_on_trajectories(trajectories,  |step| step.step_universal_reward().to_tensor())
     }
 
     fn train_on_trajectories_info_set_rewards(&mut self,
-                                              trajectories: &[AgentTrajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>],
+                                              trajectories: &[Trajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>],
                                               ) -> Result<(), AmfiRLError<DP>>
     where <<Self as Policy<DP>>::InfoSetType as EvaluatedInformationSet<DP>>::RewardType: FloatTensorReward{
 

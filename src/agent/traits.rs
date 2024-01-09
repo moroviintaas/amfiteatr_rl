@@ -32,7 +32,8 @@ where <T as StatefulAgent<DP>>::InfoSetType: EvaluatedInformationSet<DP>
 
 
 pub trait RlModelAgent<DP: DomainParameters, Seed, IS: EvaluatedInformationSet<DP>>:
-    AutomaticAgentRewardedAndEvaluated<DP, Assessment= <IS as EvaluatedInformationSet<DP>>::RewardType>
+    AutomaticAgentRewarded<DP>
+    + SelfEvaluatingAgent<DP,  Assessment= <IS as EvaluatedInformationSet<DP>>::RewardType>
     + MultiEpisodeAutoAgentRewarded<DP, Seed>
     + PolicyAgent<DP> + StatefulAgent<DP, InfoSetType=IS>
     + TracingAgent<DP, AgentTraceStep<DP, IS>>
@@ -48,7 +49,8 @@ impl<
     DP: DomainParameters,
     Seed,
     IS: EvaluatedInformationSet<DP>,
-    T: AutomaticAgentRewardedAndEvaluated<DP, Assessment= <IS as EvaluatedInformationSet<DP>>:: RewardType>
+    T: AutomaticAgentRewarded<DP>
+        + SelfEvaluatingAgent<DP,  Assessment= <IS as EvaluatedInformationSet<DP>>::RewardType>
         + MultiEpisodeAutoAgentRewarded<DP, Seed>
         + PolicyAgent<DP> + StatefulAgent<DP, InfoSetType=IS>
         + TracingAgent<DP, AgentTraceStep<DP, IS>>

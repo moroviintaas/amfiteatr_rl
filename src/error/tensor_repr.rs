@@ -1,5 +1,5 @@
 use tch::TchError;
-use amfi::domain::DomainParameters;
+use amfi_core::domain::DomainParameters;
 use crate::error::AmfiRLError;
 use thiserror::Error;
 

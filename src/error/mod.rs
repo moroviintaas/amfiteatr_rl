@@ -3,8 +3,8 @@ pub use tensor_repr::*;
 
 use tch::TchError;
 use thiserror::Error;
-use amfi::error::AmfiError;
-use amfi::domain::DomainParameters;
+use amfi_core::error::AmfiError;
+use amfi_core::domain::DomainParameters;
 
 
 #[derive(Error, Debug)]

@@ -1,8 +1,8 @@
 use tch::nn::VarStore;
 use tch::Tensor;
-use amfi::agent::{AgentTraceStep, Trajectory, Policy, EvaluatedInformationSet};
+use amfi_core::agent::{AgentTraceStep, Trajectory, Policy, EvaluatedInformationSet};
 
-use amfi::domain::DomainParameters;
+use amfi_core::domain::DomainParameters;
 use crate::error::AmfiRLError;
 use crate::tensor_repr::FloatTensorReward;
 

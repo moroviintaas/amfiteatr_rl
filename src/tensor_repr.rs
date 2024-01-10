@@ -1,8 +1,8 @@
 use std::error::Error;
 use std::fmt::{Debug, Display};
 use tch::{Tensor};
-use amfi::domain::{Action, Reward};
-use amfi::error::{ConvertError};
+use amfi_core::domain::{Action, Reward};
+use amfi_core::error::{ConvertError};
 use crate::error::TensorRepresentationError;
 
 

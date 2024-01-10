@@ -7,6 +7,7 @@ pub mod q_learning_policy;
 mod learning_policy;
 pub mod agent;
 mod train_config;
+pub mod demo;
 
 pub use learning_policy::*;
 pub use train_config::*;

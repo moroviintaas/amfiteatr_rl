@@ -4,15 +4,15 @@ use log::{debug, trace};
 use tch::Kind::{Float};
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, kind, Tensor};
-use amfi::agent::{AgentTraceStep, Trajectory, InformationSet, Policy, EvaluatedInformationSet};
-use amfi::domain::DomainParameters;
+use amfi_core::agent::{AgentTraceStep, Trajectory, InformationSet, Policy, EvaluatedInformationSet};
+use amfi_core::domain::DomainParameters;
 use crate::error::AmfiRLError;
 use crate::experiencing_policy::SelfExperiencingPolicy;
 use crate::{LearningNetworkPolicy, TrainConfig};
 use crate::tensor_repr::{ActionTensor, ConvertToTensor, WayToTensor};
 use crate::torch_net::{A2CNet, TensorA2C};
 
-
+/// Generic implementation of Advantage Actor Critic policy
 pub struct ActorCriticPolicy<
     DP: DomainParameters,
     InfoSet: InformationSet<DP> + Debug + ConvertToTensor<InfoSetWay>,
@@ -46,6 +46,33 @@ ActorCriticPolicy<
     //StateConverter>
     >
 where <DP as DomainParameters>::ActionType: ActionTensor{
+    /// ```
+    /// use tch::{Device, nn, Tensor};
+    /// use tch::nn::{Adam, VarStore};
+    /// use amfi_core::demo::{DemoDomain, DemoInfoSet};
+    /// use amfi_rl::actor_critic::ActorCriticPolicy;
+    /// use amfi_rl::demo::DemoInfoSetWay;
+    /// use amfi_rl::torch_net::{A2CNet, TensorA2C};
+    /// use amfi_rl::TrainConfig;
+    /// let var_store = VarStore::new(Device::Cpu);
+    /// let neural_net = A2CNet::new(var_store, |path|{
+    ///     let seq = nn::seq()
+    ///         .add(nn::linear(path / "input", 1, 128, Default::default()))
+    ///         .add(nn::linear(path / "hidden", 128, 128, Default::default()));
+    ///     let actor = nn::linear(path / "al", 128, 2, Default::default());
+    ///     let critic = nn::linear(path / "cl", 128, 1, Default::default());
+    ///     let device = path.device();
+    ///     {move |xs: &Tensor|{
+    ///         let xs = xs.to_device(device).apply(&seq);
+    ///         //(xs.apply(&critic), xs.apply(&actor))
+    ///         TensorA2C{critic: xs.apply(&critic), actor: xs.apply(&actor)}
+    ///     }}
+    ///
+    /// });
+    /// let optimizer = neural_net.build_optimizer(Adam::default(), 0.01).unwrap();
+    ///
+    /// let policy: ActorCriticPolicy<DemoDomain, DemoInfoSet, DemoInfoSetWay> = ActorCriticPolicy::new(neural_net, optimizer, DemoInfoSetWay{}, TrainConfig { gamma: 0.99 });
+    /// ```
     pub fn new(network: A2CNet,
                optimizer: Optimizer,
                convert_way: InfoSetWay,

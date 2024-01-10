@@ -1,6 +1,6 @@
 use std::error::Error;
-use amfi::agent::{AgentTraceStep, Trajectory, Policy, EvaluatedInformationSet};
-use amfi::domain::DomainParameters;
+use amfi_core::agent::{AgentTraceStep, Trajectory, Policy, EvaluatedInformationSet};
+use amfi_core::domain::DomainParameters;
 
 
 pub trait SelfExperiencingPolicy<DP:  DomainParameters>{

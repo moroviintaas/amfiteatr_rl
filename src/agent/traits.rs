@@ -1,5 +1,5 @@
-use amfi::agent::*;
-use amfi::domain::DomainParameters;
+use amfi_core::agent::*;
+use amfi_core::domain::DomainParameters;
 use crate::LearningNetworkPolicy;
 
 pub trait NetworkLearningAgent<DP: DomainParameters>: AutomaticAgentRewarded<DP>  + PolicyAgent<DP> + TracingAgent<DP, <Self as StatefulAgent<DP>>::InfoSetType>

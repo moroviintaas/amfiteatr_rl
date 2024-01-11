@@ -34,7 +34,7 @@ pub trait ConvertToTensor<W: WayToTensor> : Debug{
         t1.f_flatten(0, -1).map_err(|e|{
             TensorRepresentationError::Torch {
                 error: e,
-                context: format!("Flattenning tensor {t1:?} from information set: {:?}", self)
+                context: format!("Flattening tensor {t1:?} from information set: {:?}", self)
             }
         })
     }

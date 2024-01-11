@@ -3,6 +3,8 @@ use amfi_core::domain::DomainParameters;
 use crate::error::AmfiRLError;
 use thiserror::Error;
 
+
+/// Error in vectorisation of data to tensor
 #[derive(Error, Debug)]
 pub enum TensorRepresentationError{
     #[error("Information set {info_set:?} cannot be fit into tensor of shape {shape:?}.")]

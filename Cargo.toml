@@ -8,6 +8,6 @@ edition = "2021"
 [dependencies]
 amfi_core = {path = "../amfi_core" , features = ["demo"]}
 tch = "0.14.0"
-log = "0.4.19"
-thiserror = "1.0.40"
+log = "0.4.20"
+thiserror = "1.0.56"
 rand = "0.8.5"

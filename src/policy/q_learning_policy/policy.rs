@@ -11,11 +11,11 @@ use amfi_core::domain::DomainParameters;
 
 
 use crate::error::AmfiRLError;
-use crate::{LearningNetworkPolicy, TrainConfig};
 use crate::tensor_repr::{ConvertToTensor,  WayToTensor};
 use crate::torch_net::NeuralNet1;
 use rand::thread_rng;
-
+use crate::policy::LearningNetworkPolicy;
+pub use crate::policy::TrainConfig;
 
 
 #[derive(Debug, Copy, Clone)]

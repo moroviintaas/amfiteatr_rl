@@ -7,15 +7,19 @@ use amfi_core::error::AmfiError;
 use amfi_core::domain::DomainParameters;
 
 
+/// Error trait that wraps standard [`AmfiError`]
 #[derive(Error, Debug)]
 pub enum AmfiRLError<DP: DomainParameters>{
+    /// Variant - [`AmfiError`]
     #[error("Basic amfi error: {0}")]
     Amfi(AmfiError<DP>),
+    /// Variant wrapping error captured by [`tch`]
     #[error("Torch error: {error} in context: {context:}")]
     Torch{
         error: TchError,
         context: String
     },
+    /// Error with tensor representation
     #[error("Tensor representation: {0}")]
     TensorRepresentation(TensorRepresentationError),
 

@@ -1,4 +1,4 @@
-use crate::DiscountAggregator;
+use crate::policy::DiscountAggregator;
 
 #[derive(Copy, Clone)]
 pub struct TrainConfig{

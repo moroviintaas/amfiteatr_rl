@@ -6,20 +6,41 @@ use amfi_core::error::{ConvertError};
 use crate::error::TensorRepresentationError;
 
 
-pub trait ConvStateToTensor<T>: Send{
+/// Extension for [`ConversionToTensor`] to actually produce tensor. However implementing this trait
+/// is optional, because generic implementations require [`ConvertToTensor`] on type converted,
+/// and it is probably what you need to implement.
+/// However it may be sometimes convenient to implement this trait for converter and then use it on
+/// converted types.
+pub trait SimpleConvertToTensor<T>: Send + ConversionToTensor{
+    /// Take reference to associated type and output tensor
     fn make_tensor(&self, t: &T) -> Tensor;
 }
 
 
 
+
+/// Trait representing structs (maybe 0-sized) that tell what is desired shape of tensor produced
+/// by conversion to tensor when using [`ConvertToTensor`].
 pub trait ConversionToTensor: Send + Default{
+    /// Returns shape (slice of i64 numbers) of shape that must be produced for network
     fn desired_shape(&self) -> &[i64];
 
+    /// Returns shape (slice of i64 numbers) of shape that must be produced for network but flatten
+    /// to one dimension
     fn desired_shape_flatten(&self) -> i64{
         self.desired_shape().iter().product()
     }
 }
 
+/// Trait for structs that can be represented as traits, for example game information sets (game states).
+/// It could be resolved by requiring `&T: Into<Tensor>`, however using associated type
+/// [`ConversionToTensor`] allows to implement different conversion. This may be useful when you
+/// implement information set however you want several tensor forms for experiments.
+/// For example in some card game you may represent only current _certain_ information
+/// and compare it with model utilizing some assumptions on _uncertain_ information like
+/// _"enemy has king of hearts with probability of 40%"_.
+/// In this case you can implement one [`InformationSet`](amfi_core::agent::InformationSet) and two ways
+/// of converting it.
 pub trait ConvertToTensor<W: ConversionToTensor> : Debug{
     fn try_to_tensor(&self, way: &W) -> Result<Tensor, TensorRepresentationError>;
 

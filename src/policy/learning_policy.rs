@@ -34,7 +34,7 @@ where <Self as Policy<DP>>::InfoSetType: EvaluatedInformationSet<DP>
     fn config(&self) -> &Self::TrainConfig;
     /// This is generic training function. Generic type `R` must produce reward tensor that
     /// agent got in this step. In traditional RL model it will be vectorised reward calculated
-    /// by environment. This is in fact implemented by [`train_on_trajectories_env_reward`].
+    /// by environment. This is in fact implemented by [`train_on_trajectories_env_reward`](LearningNetworkPolicy::train_on_trajectories_env_reward).
     fn train_on_trajectories<R: Fn(&AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>) -> Tensor>(
         &mut self,
         trajectories: &[Trajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>],

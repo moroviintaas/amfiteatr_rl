@@ -7,9 +7,8 @@ use tch::{Kind, kind, Tensor};
 use amfi_core::agent::{AgentTraceStep, Trajectory, InformationSet, Policy, EvaluatedInformationSet};
 use amfi_core::domain::DomainParameters;
 use crate::error::AmfiRLError;
-use crate::policy::experiencing_policy::SelfExperiencingPolicy;
 use crate::policy::LearningNetworkPolicy;
-use crate::tensor_repr::{ActionTensor, ConvertToTensor, WayToTensor};
+use crate::tensor_data::{ActionTensor, ConvertToTensor, ConversionToTensor};
 use crate::torch_net::{A2CNet, TensorA2C};
 use crate::policy::TrainConfig;
 
@@ -18,7 +17,7 @@ pub struct ActorCriticPolicy<
     DP: DomainParameters,
     InfoSet: InformationSet<DP> + Debug + ConvertToTensor<InfoSetWay>,
     //StateConverter: ConvStateToTensor<InfoSet>,
-    InfoSetWay: WayToTensor
+    InfoSetWay: ConversionToTensor
     //ActInterpreter: TensorInterpreter<Option<DP::ActionType>>
 > {
     network: A2CNet,
@@ -36,7 +35,7 @@ pub struct ActorCriticPolicy<
 impl<
     DP: DomainParameters,
     InfoSet: EvaluatedInformationSet<DP>  + Debug + ConvertToTensor<InfoSetWay>,
-    InfoSetWay: WayToTensor,
+    InfoSetWay: ConversionToTensor,
     //InfoSet: ScoringInformationSet<DP> + Debug,
     //StateConverter: ConvStateToTensor<InfoSet>>
     >
@@ -52,7 +51,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
     /// use tch::nn::{Adam, VarStore};
     /// use amfi_core::demo::{DemoDomain, DemoInfoSet};
     /// use amfi_rl::policy::ActorCriticPolicy;
-    /// use amfi_rl::demo::DemoInfoSetWay;
+    /// use amfi_rl::demo::DemoConversionToTensor;
     /// use amfi_rl::torch_net::{A2CNet, TensorA2C};
     /// use amfi_rl::policy::TrainConfig;
     /// let var_store = VarStore::new(Device::Cpu);
@@ -65,14 +64,14 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
     ///     let device = path.device();
     ///     {move |xs: &Tensor|{
     ///         let xs = xs.to_device(device).apply(&seq);
-    ///         //(xs.apply(&critic), xs.apply(&actor))
     ///         TensorA2C{critic: xs.apply(&critic), actor: xs.apply(&actor)}
     ///     }}
     ///
     /// });
     /// let optimizer = neural_net.build_optimizer(Adam::default(), 0.01).unwrap();
     ///
-    /// let policy: ActorCriticPolicy<DemoDomain, DemoInfoSet, DemoInfoSetWay> = ActorCriticPolicy::new(neural_net, optimizer, DemoInfoSetWay{}, TrainConfig { gamma: 0.99 });
+    /// let policy: ActorCriticPolicy<DemoDomain, DemoInfoSet, DemoConversionToTensor>
+    ///     = ActorCriticPolicy::new(neural_net, optimizer, DemoConversionToTensor{}, TrainConfig { gamma: 0.99 });
     /// ```
     pub fn new(network: A2CNet,
                optimizer: Optimizer,
@@ -102,7 +101,7 @@ impl<DP: DomainParameters,
     //InfoSet: InformationSet<DP> + Debug,
     //TB: ConvStateToTensor<InfoSet>,
     InfoSet: InformationSet<DP> + Debug + ConvertToTensor<InfoSetWay>,
-    InfoSetWay: WayToTensor,
+    InfoSetWay: ConversionToTensor,
     /*ActInterpreter: TensorInterpreter<Option<DP::ActionType>>*/
 > Policy<DP> for ActorCriticPolicy<
     DP,
@@ -137,7 +136,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
 impl<
     DP: DomainParameters,
     InfoSet: EvaluatedInformationSet<DP>  + Debug + ConvertToTensor<InfoSetWay>,
-    InfoSetWay: WayToTensor,
+    InfoSetWay: ConversionToTensor,
     //InfoSet: ScoringInformationSet<DP> + Debug,
     //StateConverter: ConvStateToTensor<InfoSet>>
     > LearningNetworkPolicy<DP> for ActorCriticPolicy<DP, InfoSet, InfoSetWay>
@@ -147,14 +146,17 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
     type Network = A2CNet;
     type TrainConfig = TrainConfig;
 
+
     fn network(&self) -> &A2CNet{
         &self.network
     }
+
 
     fn network_mut(&mut self) -> &mut A2CNet{
         &mut self.network
     }
 
+    /// Returns reference to underlying [`VarStore`]
     fn var_store(&self) -> &VarStore{
         self.network.var_store()
     }
@@ -163,6 +165,8 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
         self.network.var_store_mut()
     }
 
+    /// For now A2C always explore and switching it off is pointless, in future it will probably
+    /// select maximal probability without sampling distribution
     fn switch_explore(&mut self, _enabled: bool) {
 
     }
@@ -273,14 +277,13 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
         Ok(())
     }
 }
-
+/*
 impl<
     DP: DomainParameters,
     InfoSet: InformationSet<DP> + Debug + ConvertToTensor<InfoSetWay>,
-    InfoSetWay: WayToTensor,
+    InfoSetWay: ConversionToTensor,
     //InfoSet: InformationSet<DP> + Debug,
     //TB: ConvStateToTensor<InfoSet>,
-    /*ActInterpreter: TensorInterpreter<Option<DP::ActionType>>*/
     >
 SelfExperiencingPolicy<DP> for ActorCriticPolicy<
     DP,
@@ -301,4 +304,6 @@ where DP::ActionType: From<i64>{
     }
 }
 
+
+ */
 

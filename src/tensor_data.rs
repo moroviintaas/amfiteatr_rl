@@ -6,16 +6,13 @@ use amfi_core::error::{ConvertError};
 use crate::error::TensorRepresentationError;
 
 
-pub trait TensorBuilder<T>: Send{
-    type Error: std::error::Error;
-    fn build_tensor(&self, t: &T) -> Result<Tensor, Self::Error>;
-}
-
 pub trait ConvStateToTensor<T>: Send{
     fn make_tensor(&self, t: &T) -> Tensor;
 }
 
-pub trait WayToTensor: Send + Default{
+
+
+pub trait ConversionToTensor: Send + Default{
     fn desired_shape(&self) -> &[i64];
 
     fn desired_shape_flatten(&self) -> i64{
@@ -23,7 +20,7 @@ pub trait WayToTensor: Send + Default{
     }
 }
 
-pub trait ConvertToTensor<W: WayToTensor> : Debug{
+pub trait ConvertToTensor<W: ConversionToTensor> : Debug{
     fn try_to_tensor(&self, way: &W) -> Result<Tensor, TensorRepresentationError>;
 
     fn to_tensor(&self, way: &W) -> Tensor{
@@ -52,38 +49,24 @@ pub trait ConvertToTensor<W: WayToTensor> : Debug{
     }
 }
 
-impl<W: WayToTensor, T: ConvertToTensor<W>> ConvertToTensor<W> for Box<T>{
+impl<W: ConversionToTensor, T: ConvertToTensor<W>> ConvertToTensor<W> for Box<T>{
     fn try_to_tensor(&self, way: &W) -> Result<Tensor, TensorRepresentationError> {
         self.as_ref().try_to_tensor(way)
     }
 }
 
-pub trait WayFromTensor: Send{
+pub trait ConversionFromTensor: Send{
     fn expected_input_shape() -> &'static[i64];
 }
 
-pub trait TryConvertFromTensor<W: WayFromTensor>{
+pub trait TryConvertFromTensor<W: ConversionFromTensor>{
     type ConvertError: Error;
     fn try_from_tensor(tensor: &Tensor, way: &W) -> Result<Self, Self::ConvertError> where Self: Sized;
 }
 
-pub trait ConvertToTensorD<W: WayToTensor>: ConvertToTensor<W> + Display + Debug{}
-impl<W: WayToTensor, T: ConvertToTensor<W> + Display + Debug> ConvertToTensorD<W> for T{}
-/*
-impl<DP: DomainParameters, S: InformationSet<DP>, T: ConvStateToTensor<S>> ConvStateToTensor<Box<S>> for T{
-    fn make_tensor(&self, t: &Box<S>) -> Tensor {
-        self.make_tensor(t.as_ref())
-    }
-}
+pub trait ConvertToTensorD<W: ConversionToTensor>: ConvertToTensor<W> + Display + Debug{}
+impl<W: ConversionToTensor, T: ConvertToTensor<W> + Display + Debug> ConvertToTensorD<W> for T{}
 
- */
-
-
-
-pub trait TensorInterpreter<T>: Send{
-    type Error: std::error::Error;
-    fn interpret_tensor(&self, tensor: &Tensor) -> Result<T, Self::Error>;
-}
 
 pub trait ActionTensor: Action{
 

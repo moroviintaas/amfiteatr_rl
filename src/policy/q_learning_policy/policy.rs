@@ -11,18 +11,21 @@ use amfi_core::domain::DomainParameters;
 
 
 use crate::error::AmfiRLError;
-use crate::tensor_repr::{ConvertToTensor,  WayToTensor};
+use crate::tensor_data::{ConvertToTensor, ConversionToTensor};
 use crate::torch_net::NeuralNet1;
 use rand::thread_rng;
 use crate::policy::LearningNetworkPolicy;
 pub use crate::policy::TrainConfig;
 
-
+/// Enum used to select best action
 #[derive(Debug, Copy, Clone)]
 pub enum QSelector{
+    /// Always select action with maximal Q-value (do not explore)
     Max,
     //MultinomialLinear,
+    /// Treat Q-function as logit distribution and sample action
     MultinomialLogits,
+    /// With probability epsilon explore (using multinomial distribution on softmaxed Q-values), otherwise select max
     EpsilonGreedy(f64),
 }
 
@@ -86,12 +89,12 @@ impl QSelector{
     }*/
 
 }
-
+/// Generic implementation of Advantage Q-function policy
 pub struct QLearningPolicy<
     DP: DomainParameters,
     InfoSet: InformationSet<DP> + Debug + ConvertToTensor<IS2T>,
-    IS2T: WayToTensor,
-    A2T: WayToTensor,
+    IS2T: ConversionToTensor,
+    A2T: ConversionToTensor,
 
 >
 {
@@ -111,8 +114,8 @@ impl
 <
     DP: DomainParameters,
     InfoSet: EvaluatedInformationSet<DP> + Debug + ConvertToTensor<IS2T> + PresentPossibleActions<DP>,
-    IS2T: WayToTensor,
-    A2T: WayToTensor
+    IS2T: ConversionToTensor,
+    A2T: ConversionToTensor
 > QLearningPolicy<DP, InfoSet, IS2T, A2T>
 where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>, {
 
@@ -142,8 +145,8 @@ impl
 <
     DP: DomainParameters,
     InfoSet: EvaluatedInformationSet<DP> + Debug + ConvertToTensor<IS2T> + PresentPossibleActions<DP>,
-    IS2T: WayToTensor,
-    A2T: WayToTensor
+    IS2T: ConversionToTensor,
+    A2T: ConversionToTensor
 > LearningNetworkPolicy<DP> for QLearningPolicy<DP, InfoSet, IS2T, A2T>
 where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>,
 //<DP as DomainParameters>::UniversalReward: FloatTensorReward,
@@ -261,8 +264,8 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
 impl<
     DP: DomainParameters,
     InfoSet: InformationSet<DP> + Debug + ConvertToTensor<IS2T> + PresentPossibleActions<DP>,
-    IS2T: WayToTensor,
-    A2T: WayToTensor
+    IS2T: ConversionToTensor,
+    A2T: ConversionToTensor
 > Policy<DP> for QLearningPolicy<DP, InfoSet, IS2T, A2T>
 where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterator>::Item: ConvertToTensor<A2T>{
     type InfoSetType = InfoSet;

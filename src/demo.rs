@@ -2,21 +2,24 @@ use tch::Tensor;
 use amfi_core::demo::{DemoAction, DemoInfoSet};
 use amfi_core::error::ConvertError;
 use crate::error::TensorRepresentationError;
-use crate::tensor_repr::{ActionTensor, ConvertToTensor, WayToTensor};
+use crate::tensor_data::{ActionTensor, ConvertToTensor, ConversionToTensor};
 
+/// Demonstration conversion to tensor meant for [`amfi::DemoInfoSet`].
+/// This is made only to demonstrate syntax for examples making sense please refer to
+/// examples linked in crate's root.
 #[derive(Default, Copy, Clone, Debug)]
-pub struct DemoInfoSetWay{}
+pub struct DemoConversionToTensor {}
 
 
 
-impl WayToTensor for DemoInfoSetWay{
+impl ConversionToTensor for DemoConversionToTensor {
     fn desired_shape(&self) -> &[i64] {
         &[1]
     }
 }
 
-impl ConvertToTensor<DemoInfoSetWay> for DemoInfoSet{
-    fn try_to_tensor(&self, _way: &DemoInfoSetWay) -> Result<Tensor, TensorRepresentationError> {
+impl ConvertToTensor<DemoConversionToTensor> for DemoInfoSet{
+    fn try_to_tensor(&self, _way: &DemoConversionToTensor) -> Result<Tensor, TensorRepresentationError> {
         Ok(Tensor::from_slice(&[1.0]))
     }
 }

@@ -1,5 +1,6 @@
 use tch::Tensor;
 
+
 pub trait NetInput{
     fn tensor(self) -> Tensor;
 }

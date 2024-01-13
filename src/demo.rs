@@ -4,7 +4,7 @@ use amfi_core::error::ConvertError;
 use crate::error::TensorRepresentationError;
 use crate::tensor_data::{ActionTensor, ConvertToTensor, ConversionToTensor};
 
-/// Demonstration conversion to tensor meant for [`DemoInfoSet`](amfi_core::DemoInfoSet).
+/// Demonstration conversion to tensor meant for [`DemoInfoSet`].
 /// This is made only to demonstrate syntax for examples making sense please refer to
 /// examples linked in crate's root.
 #[derive(Default, Copy, Clone, Debug)]

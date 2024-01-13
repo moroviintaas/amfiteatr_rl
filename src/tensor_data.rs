@@ -1,5 +1,5 @@
 use std::error::Error;
-use std::fmt::{Debug, Display};
+use std::fmt::{Debug};
 use tch::{Tensor};
 use amfi_core::domain::{Action, Reward};
 use amfi_core::error::{ConvertError};
@@ -76,25 +76,35 @@ impl<W: ConversionToTensor, T: ConvertToTensor<W>> ConvertToTensor<W> for Box<T>
     }
 }
 
+/// Trait representing structs (maybe 0-sized) that tell what is expected size of tensor to be
+/// used to create data struct using [`TryConvertFromTensor`].
 pub trait ConversionFromTensor: Send{
     fn expected_input_shape() -> &'static[i64];
 }
 
+/// Implemented by structs that can be converted from tensors.
+/// Certain data type can have different tensor representation, then it is needed to specify
+/// what particular representation is used (done by using correct [`ConversionFromTensor`].
 pub trait TryConvertFromTensor<W: ConversionFromTensor>{
     type ConvertError: Error;
     fn try_from_tensor(tensor: &Tensor, way: &W) -> Result<Self, Self::ConvertError> where Self: Sized;
 }
 
+/*
 pub trait ConvertToTensorD<W: ConversionToTensor>: ConvertToTensor<W> + Display + Debug{}
 impl<W: ConversionToTensor, T: ConvertToTensor<W> + Display + Debug> ConvertToTensorD<W> for T{}
+*/
 
-
+/// Trait dedicated for actions that can be written as tensor and read from tensors (usually it
+/// will be some index in action space. Actual implementations expects that actions are represented
+/// as Tensor with type [`Float`](tch::Kind::Float).
 pub trait ActionTensor: Action{
 
     fn to_tensor(&self) -> Tensor;
     fn try_from_tensor(t: &Tensor) -> Result<Self, ConvertError>;
 }
 
+/// Trait dedicated to rewards (payoffs) that can be represented as tensor of floats
 pub trait FloatTensorReward: Reward{
     //type Dims: IntList;
     fn to_tensor(&self) -> Tensor;

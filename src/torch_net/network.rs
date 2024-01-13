@@ -3,6 +3,10 @@ use tch::{Device, TchError, Tensor};
 use tch::nn::{Optimizer, OptimizerConfig, Path,  VarStore};
 use crate::torch_net::{NetOutput, TensorA2C};
 
+/// Structure wrapping [`VarStore`] and network closure used to build neural network based function.
+/// Examples in [`tch`](https://github.com/LaurentMazare/tch-rs) show how neural networks are used.
+/// This structure shortens some steps of setting and provides some helpful functions - especially
+/// [`build_optimiser`](NeuralNet::build_optimizer).
 pub struct NeuralNet<Output: NetOutput>{
     net: Box<dyn Fn(&Tensor) -> Output + Send>,
     var_store: VarStore,
@@ -10,9 +14,13 @@ pub struct NeuralNet<Output: NetOutput>{
 }
 
 
+/// [`NeuralNet`] with single `Tensor` as output.
 pub type NeuralNet1 = NeuralNet<Tensor>;
+/// [`NeuralNet`] with tuple `(Tensor, Tensor)` as output.
 pub type NeuralNet2 = NeuralNet<(Tensor, Tensor)>;
+/// [`NeuralNet`] with [`TensorA2C`] as output.
 pub type A2CNet = NeuralNet<TensorA2C>;
+/// [`NeuralNet`] with single `Tensor` as output. Same as [`NeuralNet1`].
 pub type QValueNet = NeuralNet<Tensor>;
 
 /// To construct network you need `VarStore` and function (closure) taking `nn::Path` as argument
@@ -58,6 +66,7 @@ impl<Output: NetOutput> NeuralNet< Output>{
             //_input: Default::default()
         }
     }
+    /// Build optimiser for network, given `OptimizerConfig`. Uses [`VarStore`] stored in [`NeuralNet`] struct;
     pub fn build_optimizer<OptC: OptimizerConfig>
         (&self, optimiser_config: OptC, learning_rate: f64) -> Result<Optimizer, TchError>{
 
@@ -94,19 +103,12 @@ impl<Output: NetOutput> NeuralNet< Output>{
     }
 }
 
-/// ```
-/// use tch::{Device, nn};
-/// use tch::nn::VarStore;
-/// use amfi_rl::torch_net::NeuralNetTemplate;
-/// let nc = NeuralNetTemplate::new(|path|{
-///     let seq = nn::seq()
-///         .add(nn::linear(path / "input", 32, 4, Default::default()));
-///     move |tensor| {tensor.apply(&seq)}
-/// });
-/// let (vs1, vs2) = (VarStore::new(Device::Cpu), VarStore::new(Device::Cpu));
-/// let (net1, net2) = (nc.get_net_closure(), nc.get_net_closure());
-///
-/// ```
+/// This is wrapper for closure representing neural network. In [`NeuralNet`]
+/// network is pinned with local [`VarStore`], so when you want to construct two identically
+/// structured neural networks you have to clone defined closure and use these cloned closures to
+/// construct two networks. This helper structure allows declaring closure and then using it to
+/// build many neural networks
+
 pub struct NeuralNetTemplate<
     Output: NetOutput,
     N: 'static + Send + Fn(&Tensor) -> Output,
@@ -127,6 +129,7 @@ impl<
     F: Fn(&Path) -> N + Clone>
 NeuralNetTemplate<O, N, F>{
 
+
     pub fn new(net_closure: F) -> Self{
         Self{
             _output: PhantomData::default(),
@@ -145,6 +148,40 @@ NeuralNetTemplate<O, N, F>{
 
     }*/
 
+    /// When you would do something like this it will fail to compile
+    /// ```compile_fail
+    /// use tch::{Device, nn};
+    /// use tch::nn::VarStore;
+    /// use amfi_rl::torch_net::{NeuralNet, NeuralNetTemplate};
+    /// let closure = |path|{
+    ///     let seq = nn::seq()
+    ///         .add(nn::linear(path / "input", 32, 4, Default::default()));
+    ///     move |tensor| {tensor.apply(&seq)}
+    /// };
+    /// let (vs1, vs2) = (VarStore::new(Device::Cpu), VarStore::new(Device::Cpu));
+    /// let net1 = NeuralNet::new(vs1, closure.clone());
+    /// let net2 = NeuralNet::new(vs2, closure);
+    ///
+    ///
+    /// ```
+    /// Use template to make it work (it allows compiler to derive `tensor` type and you do not have
+    /// to do this yourself).
+    /// ```
+    /// use tch::{Device, nn};
+    /// use tch::nn::VarStore;
+    /// use amfi_rl::torch_net::{NeuralNet, NeuralNetTemplate};
+    /// let nc = NeuralNetTemplate::new(|path|{
+    ///     let seq = nn::seq()
+    ///         .add(nn::linear(path / "input", 32, 4, Default::default()));
+    ///     move |tensor| {tensor.apply(&seq)}
+    /// });
+    /// let (vs1, vs2) = (VarStore::new(Device::Cpu), VarStore::new(Device::Cpu));
+    /// let closure = nc.get_net_closure();
+    /// let net1 = NeuralNet::new(vs1, closure);
+    /// let net2 = NeuralNet::new(vs2, closure);
+    ///
+    ///
+    /// ```
     pub fn get_net_closure(&self) -> F{
         self.net_closure.clone()
     }

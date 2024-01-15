@@ -1,8 +1,8 @@
 //! # AmfiRL
-//! Framework library for reinforcement learning using data model from [`amfi`](amfi_core).
+//! Framework library for reinforcement learning using data model from [`amfi`](amfiteatr_core).
 //! Crate contains traits and generic implementation.
 //! ## Examples
-//! Examples are presented in separate crate - [`amfi_examples`](https://github.com/moroviintaas/amfi_examples)
+//! Examples are presented in separate crate - [`amfiteatr_examples`](https://github.com/moroviintaas/amfiteatr_examples)
 //! ## Licence: MIT
 
 

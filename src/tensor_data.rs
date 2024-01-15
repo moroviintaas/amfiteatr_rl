@@ -1,8 +1,8 @@
 use std::error::Error;
 use std::fmt::{Debug};
 use tch::{Tensor};
-use amfi_core::domain::{Action, Reward};
-use amfi_core::error::{ConvertError};
+use amfiteatr_core::domain::{Action, Reward};
+use amfiteatr_core::error::{ConvertError};
 use crate::error::TensorRepresentationError;
 
 
@@ -39,7 +39,7 @@ pub trait ConversionToTensor: Send + Default{
 /// For example in some card game you may represent only current _certain_ information
 /// and compare it with model utilizing some assumptions on _uncertain_ information like
 /// _"enemy has king of hearts with probability of 40%"_.
-/// In this case you can implement one [`InformationSet`](amfi_core::agent::InformationSet) and two ways
+/// In this case you can implement one [`InformationSet`](amfiteatr_core::agent::InformationSet) and two ways
 /// of converting it.
 pub trait ConvertToTensor<W: ConversionToTensor> : Debug{
     fn try_to_tensor(&self, way: &W) -> Result<Tensor, TensorRepresentationError>;

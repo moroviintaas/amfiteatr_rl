@@ -1,11 +1,11 @@
-use amfi_core::agent::*;
-use amfi_core::domain::DomainParameters;
+use amfiteatr_core::agent::*;
+use amfiteatr_core::domain::DomainParameters;
 use crate::policy::LearningNetworkPolicy;
 
 
 /// Trait representing agent that run automatically (with reward collection) (it does not
 /// require any compatibility). This trait is not object safe because Policy traits has generic type
-/// information set with generic parameter of [`DomainParameters`](amfi_core::domain::DomainParameters).
+/// information set with generic parameter of [`DomainParameters`](amfiteatr_core::domain::DomainParameters).
 ///
 pub trait NetworkLearningAgent<DP: DomainParameters>:
     AutomaticAgentRewarded<DP>
@@ -42,7 +42,7 @@ where <T as StatefulAgent<DP>>::InfoSetType: EvaluatedInformationSet<DP>
 /// Trait representing agent that run automatically (with reward collection) and cam be reseeded
 /// for subsequent game episodes.
 /// For now this trait requires both environment sources reward and agent self provided assessment.
-/// If you only want to define one you can set not needed to by of type [`NoneReward`](amfi_core::domain::NoneReward).
+/// If you only want to define one you can set not needed to by of type [`NoneReward`](amfiteatr_core::domain::NoneReward).
 /// This trait is object safe, however collections of dynamically typed agents of this trait must
 /// share the same type of information set, because [`LearningNetworkPolicy`](crate::policy::LearningNetworkPolicy)
 /// uses trajectory including information set.

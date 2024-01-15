@@ -4,8 +4,8 @@ use log::{debug, trace};
 use tch::Kind::{Float};
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, kind, Tensor};
-use amfi_core::agent::{AgentTraceStep, Trajectory, InformationSet, Policy, EvaluatedInformationSet};
-use amfi_core::domain::DomainParameters;
+use amfiteatr_core::agent::{AgentTraceStep, Trajectory, InformationSet, Policy, EvaluatedInformationSet};
+use amfiteatr_core::domain::DomainParameters;
 use crate::error::AmfiRLError;
 use crate::policy::LearningNetworkPolicy;
 use crate::tensor_data::{ActionTensor, ConvertToTensor, ConversionToTensor};
@@ -49,11 +49,11 @@ where <DP as DomainParameters>::ActionType: ActionTensor{
     /// ```
     /// use tch::{Device, nn, Tensor};
     /// use tch::nn::{Adam, VarStore};
-    /// use amfi_core::demo::{DemoDomain, DemoInfoSet};
-    /// use amfi_rl::policy::ActorCriticPolicy;
-    /// use amfi_rl::demo::DemoConversionToTensor;
-    /// use amfi_rl::torch_net::{A2CNet, TensorA2C};
-    /// use amfi_rl::policy::TrainConfig;
+    /// use amfiteatr_core::demo::{DemoDomain, DemoInfoSet};
+    /// use amfiteatr_rl::policy::ActorCriticPolicy;
+    /// use amfiteatr_rl::demo::DemoConversionToTensor;
+    /// use amfiteatr_rl::torch_net::{A2CNet, TensorA2C};
+    /// use amfiteatr_rl::policy::TrainConfig;
     /// let var_store = VarStore::new(Device::Cpu);
     /// let neural_net = A2CNet::new(var_store, |path|{
     ///     let seq = nn::seq()

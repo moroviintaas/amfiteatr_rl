@@ -3,8 +3,8 @@ pub use tensor_repr::*;
 
 use tch::TchError;
 use thiserror::Error;
-use amfi_core::error::AmfiError;
-use amfi_core::domain::DomainParameters;
+use amfiteatr_core::error::AmfiError;
+use amfiteatr_core::domain::DomainParameters;
 
 
 /// Error trait that wraps standard [`AmfiError`]

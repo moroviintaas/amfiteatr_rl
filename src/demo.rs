@@ -1,6 +1,6 @@
 use tch::Tensor;
-use amfi_core::demo::{DemoAction, DemoInfoSet};
-use amfi_core::error::ConvertError;
+use amfiteatr_core::demo::{DemoAction, DemoInfoSet};
+use amfiteatr_core::error::ConvertError;
 use crate::error::TensorRepresentationError;
 use crate::tensor_data::{ActionTensor, ConvertToTensor, ConversionToTensor};
 

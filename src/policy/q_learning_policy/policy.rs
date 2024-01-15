@@ -6,8 +6,8 @@ use rand::distributions::uniform::{UniformFloat, UniformSampler};
 use tch::Kind::Float;
 use tch::nn::{Optimizer, VarStore};
 use tch::{Kind, Reduction, Tensor};
-use amfi_core::agent::{AgentTraceStep, Trajectory, InformationSet, Policy, PresentPossibleActions, EvaluatedInformationSet};
-use amfi_core::domain::DomainParameters;
+use amfiteatr_core::agent::{AgentTraceStep, Trajectory, InformationSet, Policy, PresentPossibleActions, EvaluatedInformationSet};
+use amfiteatr_core::domain::DomainParameters;
 
 
 use crate::error::AmfiRLError;

@@ -2,11 +2,15 @@
 name = "amfiteatr_rl"
 version = "0.1.0"
 edition = "2021"
-
+repository = "https://github.com/moroviintaas/amfiteatr_rl"
+license-file = "LICENSE"
+keywords = ["game", "theory", "model", "player"]
+categories =  ["games", "simulation",  "development-tools", "science"]
+description = "Extensions providing reinforcement learning implementations for `amfiteatr`"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-amfiteatr_core = {path = "../amfiteatr_core", features = ["demo"]}
+amfiteatr_core = {version = "0.1.0", features = ["demo"]}
 tch = "0.14.0"
 log = "0.4.20"
 thiserror = "1.0.56"

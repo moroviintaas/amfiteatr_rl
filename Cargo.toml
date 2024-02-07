@@ -1,6 +1,6 @@
 [package]
 name = "amfiteatr_rl"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 repository = "https://github.com/moroviintaas/amfiteatr_rl"
 license-file = "LICENSE"
@@ -10,8 +10,10 @@ description = "Extensions providing reinforcement learning implementations for `
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-amfiteatr_core = {version = "0.1.0", features = ["demo"]}
+
 tch = "0.15.0"
 log = "0.4.20"
 thiserror = "1.0.56"
 rand = "0.8.5"
+
+amfiteatr_core = {version = "0.2.0", features = ["demo"]}

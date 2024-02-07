@@ -20,4 +20,7 @@ pub mod demo;
 /// Module dedicated to learning policies
 pub mod policy;
 
+/// Reexports compatible [`tch`]
+pub use tch;
+
 

@@ -37,13 +37,13 @@ where <Self as Policy<DP>>::InfoSetType: EvaluatedInformationSet<DP>
     /// by environment. This is in fact implemented by [`train_on_trajectories_env_reward`](LearningNetworkPolicy::train_on_trajectories_env_reward).
     fn train_on_trajectories<R: Fn(&AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>) -> Tensor>(
         &mut self,
-        trajectories: &[Trajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>],
+        trajectories: &[Trajectory<DP, <Self as Policy<DP>>::InfoSetType>],
         reward_f: R,
     ) -> Result<(), AmfiRLError<DP>>;
 
     /// Training implementation using environment distributed reward
     fn train_on_trajectories_env_reward(&mut self,
-                                        trajectories: &[Trajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>]) -> Result<(), AmfiRLError<DP>>
+                                        trajectories: &[Trajectory<DP, <Self as Policy<DP>>::InfoSetType>]) -> Result<(), AmfiRLError<DP>>
     where <DP as DomainParameters>::UniversalReward: FloatTensorReward{
 
         self.train_on_trajectories(trajectories,  |step| step.step_universal_reward().to_tensor())
@@ -51,7 +51,7 @@ where <Self as Policy<DP>>::InfoSetType: EvaluatedInformationSet<DP>
 
     /// Training implementation using self assessment calculated based on information set
     fn train_on_trajectories_self_assessed(&mut self,
-                                           trajectories: &[Trajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>],
+                                           trajectories: &[Trajectory<DP, <Self as Policy<DP>>::InfoSetType>],
                                               ) -> Result<(), AmfiRLError<DP>>
     where <<Self as Policy<DP>>::InfoSetType as EvaluatedInformationSet<DP>>::RewardType: FloatTensorReward{
 

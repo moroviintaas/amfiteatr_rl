@@ -148,9 +148,9 @@ NeuralNetTemplate<O, N, F>{
 
     }*/
 
-    /// When you would do something like this it will fail to compile
+    /// When you  do something like this it will fail to compile
     /// ```compile_fail
-    /// use tch::{Device, nn};
+    /// use tch::{Device, nn, Tensor};
     /// use tch::nn::VarStore;
     /// use amfiteatr_rl::torch_net::{NeuralNet, NeuralNetTemplate};
     /// let closure = |path|{

@@ -182,7 +182,7 @@ where <<InfoSet as PresentPossibleActions<DP>>::ActionIteratorType as IntoIterat
     fn train_on_trajectories<
         R: Fn(&AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>) -> Tensor>(
         &mut self,
-        trajectories: &[Trajectory<AgentTraceStep<DP, <Self as Policy<DP>>::InfoSetType>>],
+        trajectories: &[Trajectory<DP, <Self as Policy<DP>>::InfoSetType>],
         reward_f: R)
         -> Result<(), AmfiRLError<DP>> {
 

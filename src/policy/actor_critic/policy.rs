@@ -180,7 +180,7 @@ where <DP as DomainParameters>::ActionType: ActionTensor,
     fn train_on_trajectories<R: Fn(&AgentTraceStep<DP, InfoSet>) -> Tensor>(
 
         &mut self,
-        trajectories: &[Trajectory<AgentTraceStep<DP, InfoSet>>],
+        trajectories: &[Trajectory<DP, InfoSet>],
         reward_f: R,
         ) -> Result<(), AmfiRLError<DP>>{
 
